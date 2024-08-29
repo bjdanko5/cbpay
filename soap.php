@@ -2,30 +2,30 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 session_start(); // Запускаем сессию
+ini_set("soap.wsdl_cache_enabled", "0");
 //$_SESSION = array();
 
 // Функция для получения списка стран
-function getCountries()
+function getivcBases()
 {
     // Закомментируем реальный SOAP-запрос для отладки
-    /*
-    $wsdl = "http://example.com/your-soap-api?wsdl";
+    
+    $wsdl = "http://192.168.10.128/zkh_lk1/ws/WebСервисLK?wsdl";
+    #$wsdl = "http://example.com/your-soap-api?wsdl";
     $options = [
+        'login' => "Администратор", 
+        'password' => "",
         'trace' => 1,
         'exceptions' => 1
     ];
 
     try {
         $client = new SoapClient($wsdl, $options);
-        $response = $client->GetCountries(); // Предположим, метод GetCountries
-
-        return $response->countries; // Вернем массив стран
+        $response = $client->GetivcBases(); // Предположим, метод GetivcBases
+        return json_decode($response->return,true); // Вернем массив стран
     } catch (SoapFault $e) {
-        return [];
-    }
-    */
-
     // Возвращаем тестовые данные для отладки
+    session_destroy();
     return [
         ['code' => 'RU', 'name' => 'Russia'],
         ['code' => 'US', 'name' => 'United States'],
@@ -33,10 +33,11 @@ function getCountries()
         ['code' => 'JP', 'name' => 'Japan'],
         ['code' => 'DE', 'name' => 'Germany'],
     ];
+   }
 }
 
 // Функция для получения данных о стране (население и континент)
-function getCountryDetails($countryCode)
+function getivcBaseDetails($ivcBaseCode)
 {
     // Закомментируем реальный SOAP-запрос для отладки
     /*
@@ -48,7 +49,7 @@ function getCountryDetails($countryCode)
 
     try {
         $client = new SoapClient($wsdl, $options);
-        $response = $client->GetCountryDetails(['code' => $countryCode]); // Предположим, метод GetCountryDetails
+        $response = $client->GetivcBaseDetails(['code' => $ivcBaseCode]); // Предположим, метод GetivcBaseDetails
 
         return [
             'population' => $response->population,
@@ -68,11 +69,11 @@ function getCountryDetails($countryCode)
         'DE' => ['population' => '83 million', 'continent' => 'Europe'],
     ];
 
-    return isset($details[$countryCode]) ? $details[$countryCode] : ['population' => 'N/A', 'continent' => 'N/A'];
+    return isset($details[$ivcBaseCode]) ? $details[$ivcBaseCode] : ['population' => 'N/A', 'continent' => 'N/A'];
 }
 
 // Функция для поиска почтового индекса
-function getPostalCodeDetails($countryCode, $postalCode, $population, $continent)
+function getlsCodeDetails($ivcBaseCode, $lsCode, $population, $continent)
 {
     // Закомментируем реальный SOAP-запрос для отладки
     /*
@@ -84,21 +85,21 @@ function getPostalCodeDetails($countryCode, $postalCode, $population, $continent
 
     try {
         $client = new SoapClient($wsdl, $options);
-        $response = $client->GetPostalCodeDetails(['code' => $countryCode, 'postalCode' => $postalCode]);
+        $response = $client->GetlsCodeDetails(['code' => $ivcBaseCode, 'lsCode' => $lsCode]);
 
         return [
-            'postalCode' => $response->postalCode,
+            'lsCode' => $response->lsCode,
             'population' => $response->population,
             'continent' => $response->continent
         ];
     } catch (SoapFault $e) {
-        return ['postalCode' => $postalCode, 'population' => 'N/A', 'continent' => 'N/A'];
+        return ['lsCode' => $lsCode, 'population' => 'N/A', 'continent' => 'N/A'];
     }
     */
 
     // Возвращаем тестовые данные для отладки
     return [
-        'postalCode' => $postalCode,
+        'lsCode' => $lsCode,
         'population' => $population,
         'continent' => $continent
     ];
@@ -106,35 +107,36 @@ function getPostalCodeDetails($countryCode, $postalCode, $population, $continent
 //print $_SERVER['REQUEST_METHOD'];
 // Обработка запросов
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['func']) && $_POST['func']==='getCountries') {
+    if (isset($_POST['func']) && $_POST['func']==='getivcBases') {
 
-    if (!isset($_SESSION['countries'])) {
+    if (!isset($_SESSION['ivcBases'])) {
 //print "Тут1";
         $_SESSION = array();
-        $countries = getCountries(); // Получаем список стран (тестовые данные)
-        $_SESSION['countries'] = $countries; // Сохраняем список стран в сессии
-        echo json_encode($countries);
+        $ivcBases = getivcBases(); // Получаем список стран (тестовые данные)
+        $_SESSION['ivcBases'] = $ivcBases; // Сохраняем список стран в сессии
+        echo json_encode($ivcBases);
     } else {
-        $countries = $_SESSION['countries']; // Используем данные из сессии
-        echo json_encode($countries);
+        $ivcBases = $_SESSION['ivcBases']; // Используем данные из сессии
+        echo json_encode($ivcBases);
+        session_destroy();
         }
-//print var_export ($_SESSION['countries'],true);
+//print var_export ($_SESSION['ivcBases'],true);
     }
 }
     // Если запрос содержит код страны, возвращаем детали страны
-    if (isset($_POST['countryCode']) && !isset($_POST['postalCode'])) {
-        $countryCode = $_POST['countryCode'];
-        $details = getCountryDetails($countryCode);
+    if (isset($_POST['ivcBaseCode']) && !isset($_POST['lsCode'])) {
+        $ivcBaseCode = $_POST['ivcBaseCode'];
+        $details = getivcBaseDetails($ivcBaseCode);
         echo json_encode($details);
     }
 
     // Если запрос содержит код страны и почтовый индекс, возвращаем данные почтового индекса
-    if (isset($_POST['countryCode']) && isset($_POST['postalCode'])) {
-        $countryCode = $_POST['countryCode'];
-        $postalCode = $_POST['postalCode'];
+    if (isset($_POST['ivcBaseCode']) && isset($_POST['lsCode'])) {
+        $ivcBaseCode = $_POST['ivcBaseCode'];
+        $lsCode = $_POST['lsCode'];
         $population = $_POST['population'];
         $continent = $_POST['continent'];
-        $details = getPostalCodeDetails($countryCode, $postalCode, $population, $continent);
+        $details = getlsCodeDetails($ivcBaseCode, $lsCode, $population, $continent);
         echo json_encode($details);
     }
 

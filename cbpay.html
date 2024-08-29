@@ -5,43 +5,43 @@
     <title>Заполнение списка выбора через AJAX</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        #countryDetails, #postalDetails {
+        #ivcBaseDetails, #lsDetails {
             display: none; /* Скрываем блоки до их наполнения */
         }
     </style>
 </head>
 <body>
     <form id="myForm">
-        <label for="country">Выберите страну:</label>
-        <select id="country" name="country">
-            <option value="">Загрузка...</option>
+        <label for="ivcBase">Территория:</label>
+        <select id="ivcBase" name="ivcBase">
+            <option value="">Выберите...</option>
         </select>
         <br><br>
 
-        <button type="button" id="selectCountry">Выбрать страну</button>
+        <button type="button" id="selectivcBase">Выбрать страну</button>
         <br><br>
 
-        <label for="selectedCountry">Выбранная страна:</label>
-        <input type="text" id="selectedCountry" name="selectedCountry" readonly>
+        <label for="selectedivcBase">Выбранная страна:</label>
+        <input type="text" id="selectedivcBase" name="selectedivcBase" readonly>
         <br><br>
 
-        <div id="countryDetails">
+        <div id="ivcBaseDetails">
             <p>Население: <span id="population"></span></p>
             <p>Континент: <span id="continent"></span></p>
         </div>
         <br><br>
 
-        <label for="postalCode">Введите почтовый индекс:</label>
-        <input type="text" id="postalCode" name="postalCode" disabled>
+        <label for="lsCode">Введите почтовый индекс:</label>
+        <input type="text" id="lsCode" name="lsCode" disabled>
         <br><br>
 
-        <button type="button" id="getPostalCode" disabled>Найти почтовый индекс</button>
+        <button type="button" id="getlsCode" disabled>Найти почтовый индекс</button>
         <br><br>
 
-        <div id="postalDetails">
-            <p>Почтовый индекс: <span id="postalIndex"></span></p>
-            <p>Население: <span id="postalPopulation"></span></p>
-            <p>Континент: <span id="postalContinent"></span></p>
+        <div id="lsDetails">
+            <p>Почтовый индекс: <span id="lsIndex"></span></p>
+            <p>Население: <span id="lsPopulation"></span></p>
+            <p>Континент: <span id="lsContinent"></span></p>
         </div>
     </form>
 
@@ -51,10 +51,10 @@
             $.ajax({
                 url: 'soap.php',
                 type: 'POST',
-                data: { 'func': 'getCountries' },
+                data: { 'func': 'getivcBases' },
                 dataType: 'json',   
                 success: function (data) {
-                    var select = $('#country');
+                    var select = $('#ivcBase');
                     select.empty(); // Очистим список перед добавлением данных
                     $.each(data, function (index, value) {
                         select.append($('<option>', {
@@ -69,23 +69,23 @@
             });
 
             // Обработчик нажатия на кнопку "Выбрать страну"
-            $('#selectCountry').click(function () {
-                var selectedText = $('#country option:selected').text(); // Получаем текст выбранной страны
-                $('#selectedCountry').val(selectedText); // Устанавливаем его в поле "Выбранная страна"
+            $('#selectivcBase').click(function () {
+                var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной страны
+                $('#selectedivcBase').val(selectedText); // Устанавливаем его в поле "Выбранная страна"
 
-                var selectedCode = $('#country').val(); // Получаем код выбранной страны
+                var selectedCode = $('#ivcBase').val(); // Получаем код выбранной страны
                 if (selectedCode) {
                     $.ajax({
                         url: 'soap.php',
                         type: 'POST',
-                        data: { countryCode: selectedCode }, // Передаем код страны на сервер
+                        data: { ivcBaseCode: selectedCode }, // Передаем код страны на сервер
                         dataType: 'json',
                         success: function (data) {
                             $('#population').text(data.population); // Выводим население
                             $('#continent').text(data.continent);   // Выводим континент
-                            $('#countryDetails').show(); // Показываем блок с деталями страны
-                            $('#postalCode').prop('disabled', false); // Разблокируем поле ввода почтового индекса
-                            $('#getPostalCode').prop('disabled', false); // Разблокируем кнопку поиска почтового индекса
+                            $('#ivcBaseDetails').show(); // Показываем блок с деталями страны
+                            $('#lsCode').prop('disabled', false); // Разблокируем поле ввода почтового индекса
+                            $('#getlsCode').prop('disabled', false); // Разблокируем кнопку поиска почтового индекса
                         },
                         error: function () {
                             alert('Ошибка при получении данных.');
@@ -97,28 +97,28 @@
             });
 
             // Обработчик нажатия на кнопку "Найти почтовый индекс"
-            $('#getPostalCode').click(function () {
-                var postalCode = $('#postalCode').val(); // Получаем введенный почтовый индекс
-                var selectedCode = $('#country').val(); // Получаем код выбранной страны
+            $('#getlsCode').click(function () {
+                var lsCode = $('#lsCode').val(); // Получаем введенный почтовый индекс
+                var selectedCode = $('#ivcBase').val(); // Получаем код выбранной страны
                 var population = $('#population').text(); // Получаем население выбранной страны
                 var continent = $('#continent').text(); // Получаем континент выбранной страны
 
-                if (postalCode) {
+                if (lsCode) {
                     $.ajax({
                         url: 'soap.php',
                         type: 'POST',
                         data: {
-                            countryCode: selectedCode,
-                            postalCode: postalCode,
+                            ivcBaseCode: selectedCode,
+                            lsCode: lsCode,
                             population: population,
                             continent: continent
                         },
                         dataType: 'json',
                         success: function (data) {
-                            $('#postalIndex').text(data.postalCode); // Выводим почтовый индекс
-                            $('#postalPopulation').text(data.population); // Выводим население
-                            $('#postalContinent').text(data.continent);   // Выводим континент
-                            $('#postalDetails').show(); // Показываем блок с деталями почтового индекса
+                            $('#lsIndex').text(data.lsCode); // Выводим почтовый индекс
+                            $('#lsPopulation').text(data.population); // Выводим население
+                            $('#lsContinent').text(data.continent);   // Выводим континент
+                            $('#lsDetails').show(); // Показываем блок с деталями почтового индекса
                         },
                         error: function () {
                             alert('Ошибка при получении данных.');
