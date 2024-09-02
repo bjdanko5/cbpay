@@ -3,6 +3,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 session_start(); // Запускаем сессию
 ini_set("soap.wsdl_cache_enabled", "0");
+$wsdlLK = "http://192.168.10.128/zkh_lk1/ws/WebСервисLK?wsdl";
 //$_SESSION = array();
 
 // Функция для получения списка стран
@@ -10,8 +11,8 @@ function getivcBases()
 {
     // Закомментируем реальный SOAP-запрос для отладки
     
-    $wsdl = "http://192.168.10.128/zkh_lk1/ws/WebСервисLK?wsdl";
-    #$wsdl = "http://example.com/your-soap-api?wsdl";
+    global $wsdlLK;
+    #$wsdlLK = "http://example.com/your-soap-api?wsdl";
     $options = [
         'login' => "Администратор", 
         'password' => "",
@@ -20,7 +21,7 @@ function getivcBases()
     ];
 
     try {
-        $client = new SoapClient($wsdl, $options);
+        $client = new SoapClient($wsdlLK, $options);
         $response = $client->GetivcBases(); // Предположим, метод GetivcBases
         return json_decode($response->return,true); // Вернем массив стран
     } catch (SoapFault $e) {
@@ -38,42 +39,46 @@ function getivcBases()
 
 // Функция для получения данных о стране (население и континент)
 function getivcBaseDetails($ivcBaseCode)
-{
-    // Закомментируем реальный SOAP-запрос для отладки
-    /*
-    $wsdl = "http://example.com/your-soap-api?wsdl";
+{   
+    global $wsdlLK;
+
     $options = [
+        'login' => "Администратор", 
+        'password' => "",
         'trace' => 1,
         'exceptions' => 1
     ];
 
+
     try {
-        $client = new SoapClient($wsdl, $options);
+        $client = new SoapClient($wsdlLK, $options);
         $response = $client->GetivcBaseDetails(['code' => $ivcBaseCode]); // Предположим, метод GetivcBaseDetails
-
-        return [
-            'population' => $response->population,
-            'continent' => $response->continent
-        ];
+        return json_decode($response->return,true);
+        /*return [
+            'code' => $response->code,
+            'wdsl' => $response->wdsl
+        ];*/
     } catch (SoapFault $e) {
-        return ['population' => 'N/A', 'continent' => 'N/A'];
-    }
-    */
-
+     //   return ['code' => 'N/A', 'wdsl' => 'N/A'];
+     session_destroy(); 
     // Возвращаем тестовые данные для отладки
     $details = [
-        'RU' => ['population' => '146 million', 'continent' => 'Europe/Asia'],
-        'US' => ['population' => '331 million', 'continent' => 'North America'],
-        'CN' => ['population' => '1.4 billion', 'continent' => 'Asia'],
-        'JP' => ['population' => '126 million', 'continent' => 'Asia'],
-        'DE' => ['population' => '83 million', 'continent' => 'Europe'],
+        'RU' => ['code' => '146 million', 'wdsl' => 'Europe/Asia'],
+        'US' => ['code' => '331 million', 'wdsl' => 'North America'],
+        'CN' => ['code' => '1.4 billion', 'wdsl' => 'Asia'],
+        'JP' => ['code' => '126 million', 'wdsl' => 'Asia'],
+        'DE' => ['code' => '83 million', 'wdsl' => 'Europe'],
     ];
 
-    return isset($details[$ivcBaseCode]) ? $details[$ivcBaseCode] : ['population' => 'N/A', 'continent' => 'N/A'];
+    return isset($details[$ivcBaseCode]) ? $details[$ivcBaseCode] : ['code' => 'N/A', 'wdsl' => 'N/A'];
+   
+    }
+  
+ 
 }
 
 // Функция для поиска почтового индекса
-function getlsCodeDetails($ivcBaseCode, $lsCode, $population, $continent)
+function getlsCodeDetails($ivcBaseCode, $lsCode, $code, $wdsl)
 {
     // Закомментируем реальный SOAP-запрос для отладки
     /*
@@ -89,19 +94,19 @@ function getlsCodeDetails($ivcBaseCode, $lsCode, $population, $continent)
 
         return [
             'lsCode' => $response->lsCode,
-            'population' => $response->population,
-            'continent' => $response->continent
+            'code' => $response->code,
+            'wdsl' => $response->wdsl
         ];
     } catch (SoapFault $e) {
-        return ['lsCode' => $lsCode, 'population' => 'N/A', 'continent' => 'N/A'];
+        return ['lsCode' => $lsCode, 'code' => 'N/A', 'wdsl' => 'N/A'];
     }
     */
 
     // Возвращаем тестовые данные для отладки
     return [
         'lsCode' => $lsCode,
-        'population' => $population,
-        'continent' => $continent
+        'code' => $code,
+        'wdsl' => $wdsl
     ];
 }
 //print $_SERVER['REQUEST_METHOD'];
@@ -134,9 +139,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['ivcBaseCode']) && isset($_POST['lsCode'])) {
         $ivcBaseCode = $_POST['ivcBaseCode'];
         $lsCode = $_POST['lsCode'];
-        $population = $_POST['population'];
-        $continent = $_POST['continent'];
-        $details = getlsCodeDetails($ivcBaseCode, $lsCode, $population, $continent);
+        $code = $_POST['code'];
+        $wdsl = $_POST['wdsl'];
+        $details = getlsCodeDetails($ivcBaseCode, $lsCode, $code, $wdsl);
         echo json_encode($details);
     }
 

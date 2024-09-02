@@ -1,47 +1,148 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <title>Заполнение списка выбора через AJAX</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        #ivcBaseDetails, #lsDetails {
-            display: none; /* Скрываем блоки до их наполнения */
+        body,
+        select,
+        input {
+            font-family: Verdana, sans-serif;
+            font-size: 16px;
+        }
+
+        body {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-gap: 10px;
+        }
+        
+
+        #ivcBaseDetails,
+        #lsDetails {
+            display: none;
+            /* Скрываем блоки до их наполнения */
+        }
+
+        .mode-switch {
+           ;
+            /*display: flex;*/
+            display: box;
+            justify-content: left;
+            margin: 20px 0;
+        }
+
+        .mode-btn {
+            grid-column: 3 /span 3
+            background-color: #e0e0e0;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            /*font-size: 16px;*/
+        }
+
+        .mode-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .mode-content {
+            text-align: left;
+            margin-top: 20px;
+            /*font-size: 18px;*/
+            opacity: 0;
+            /* Скрыто по умолчанию */
+            max-height: 0;
+            /* Высота по умолчанию */
+            overflow: hidden;
+            /* Скрывает содержимое при закрытии */
+            transition: opacity 0.5s ease, max-height 0.5s ease;
+            /* Переход для плавного изменения */
+        }
+
+        .mode-content.active {
+            opacity: 1;
+            /* Показываем при активном режиме */
+            max-height: 500px;
+            /* Ограничение высоты (можно настроить) */
+        }
+
+        .toggle-mode-switch-btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            /*font-size: 16px;*/
+            height: 40px;
+        }
+
+        .toggle-mode-switch-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .toggle-mode-switch-btn:focus {
+            outline: none;
         }
     </style>
 </head>
+
 <body>
+
+
     <form id="myForm">
-        <label for="ivcBase">Территория:</label>
-        <select id="ivcBase" name="ivcBase">
-            <option value="">Выберите...</option>
-        </select>
-        <br><br>
+        <div class="mode-switch">
+            <span style="color: #007bff; font-weight: bold;">Поиск : </span>
 
-        <button type="button" id="selectivcBase">Выбрать страну</button>
-        <br><br>
 
-        <label for="selectedivcBase">Выбранная страна:</label>
-        <input type="text" id="selectedivcBase" name="selectedivcBase" readonly>
-        <br><br>
+            <button class="mode-btn active" data-mode="territory">По территории</button>
+            <button class="mode-btn" data-mode="access-code">По коду доступа</button>
 
-        <div id="ivcBaseDetails">
-            <p>Население: <span id="population"></span></p>
-            <p>Континент: <span id="continent"></span></p>
+            <div id="territory-selection" class="mode-content">
+                <!-- Здесь будет содержимое для выбора "По территории" -->
+                <label for="ivcBase"></label>
+                <select id="ivcBase" name="ivcBase">
+                    <option value="">Выберите...</option>
+                </select>
+                <br>
+            </div>
+
+            <div id="access-code-selection" class="mode-content">
+                <!-- Здесь будет содержимое для выбора "По коду доступа" -->
+                <label for="AccessCodeLS"></label>
+                <input type="text" id="AccessCodeLS" name="AccessCodeLS">
+                </select>
+                <br>
+            </div>
         </div>
-        <br><br>
+        <div id="ivcBaseDetails">
 
-        <label for="lsCode">Введите почтовый индекс:</label>
-        <input type="text" id="lsCode" name="lsCode" disabled>
-        <br><br>
+            <span style="color: #007bff; font-weight: bold;">Территория : </span>
+            <button class="toggle-mode-switch-btn" id="toggleModeSwitchButton">Изменить</button>
+            <br>
+            <span id="ivcBaseName"></span>
+            <span id="ivcBaseCode" hidden></span>
+            <span id="ivcBaseWdsl" hidden> </span>
 
-        <button type="button" id="getlsCode" disabled>Найти почтовый индекс</button>
-        <br><br>
 
+
+        </div>
+        <br>
+        <div id="getLS">
+            <label for="lsCode">Лицевой счет:</label>
+            <input type="text" id="lsCode" name="lsCode" disabled>
+            <button class="toggle-mode-switch-btn" type="button" id="getlsCodeButton" disabled>Найти</button>
+        </div>
         <div id="lsDetails">
             <p>Почтовый индекс: <span id="lsIndex"></span></p>
-            <p>Население: <span id="lsPopulation"></span></p>
-            <p>Континент: <span id="lsContinent"></span></p>
+            <p>Население: <span id="lscode"></span></p>
+            <p>Континент: <span id="lswdsl"></span></p>
         </div>
     </form>
 
@@ -52,10 +153,15 @@
                 url: 'soap.php',
                 type: 'POST',
                 data: { 'func': 'getivcBases' },
-                dataType: 'json',   
+                dataType: 'json',
                 success: function (data) {
                     var select = $('#ivcBase');
                     select.empty(); // Очистим список перед добавлением данных
+                    select.append($('<option>', {
+                        value: 0, // или другое уникальное значение
+                        text: 'Выберите...'  // текст опции
+                    }));
+
                     $.each(data, function (index, value) {
                         select.append($('<option>', {
                             value: value.code, // или другое уникальное значение
@@ -67,13 +173,46 @@
                     alert('Ошибка при загрузке данных.');
                 }
             });
+            $('#territory-selection').show();
+            $('#territory-selection').addClass('active');
+            $('.mode-btn').click(function () {
+                event.preventDefault(); // Отменяем стандартное поведение кнопки
+                $('.mode-btn').removeClass('active'); // Убираем активный класс со всех кнопок
+                $(this).addClass('active'); // Добавляем активный класс на нажатую кнопку
 
+                // Переключаем содержимое в зависимости от выбранного режима
+                if ($(this).data('mode') === 'territory') {
+                    $('#territory-selection').show();
+                    $('#territory-selection').addClass('active');
+                    $('#access-code-selection').hide();
+                    $('#access-code-selection').removeClass('active');
+                } else {
+                    $('#access-code-selection').show();
+                    $('#access-code-selection').addClass('active');
+                    $('#territory-selection').hide();
+                    $('#territory-selection').removeClass('active');
+
+                }
+
+            });
+            $('#toggleModeSwitchButton').click(function () {
+                event.preventDefault(); // Отменяем стандартное поведение кнопки
+                $('.mode-switch').find('*').prop('disabled', false);
+                $('#territory-selection').show();
+                $('#access-code-selection').show();
+                $('#ivcBaseDetails').toggle();
+                $('#ivcBase').val($('#ivcBase option:first').val());
+
+            });
             // Обработчик нажатия на кнопку "Выбрать страну"
-            $('#selectivcBase').click(function () {
-                var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной страны
-                $('#selectedivcBase').val(selectedText); // Устанавливаем его в поле "Выбранная страна"
+            //$('#selectivcBase').click(function () {
+            $('#ivcBase').change(function () {
 
+                //$('#selectedivcBase').val(selectedText); // Устанавливаем его в поле "Выбранная страна"
+
+                var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной страны 
                 var selectedCode = $('#ivcBase').val(); // Получаем код выбранной страны
+
                 if (selectedCode) {
                     $.ajax({
                         url: 'soap.php',
@@ -81,18 +220,23 @@
                         data: { ivcBaseCode: selectedCode }, // Передаем код страны на сервер
                         dataType: 'json',
                         success: function (data) {
-                            $('#population').text(data.population); // Выводим население
-                            $('#continent').text(data.continent);   // Выводим континент
+                            $('#ivcBaseCode').text(data[0].code); // Выводим население
+                            $('#ivcBaseWdsl').text(data[0].wdsl);   // Выводим континент
+                            $('#ivcBaseName').text(data[0].name);   // Выводим континент
                             $('#ivcBaseDetails').show(); // Показываем блок с деталями страны
+                            $('#lsCode').show();
                             $('#lsCode').prop('disabled', false); // Разблокируем поле ввода почтового индекса
                             $('#getlsCode').prop('disabled', false); // Разблокируем кнопку поиска почтового индекса
+                            $('.mode-switch').find('*').prop('disabled', true);
+                            $('#territory-selection').hide();
+                            $('#access-code-selection').hide();
                         },
                         error: function () {
                             alert('Ошибка при получении данных.');
                         }
                     });
                 } else {
-                    alert('Пожалуйста, выберите страну.');
+                    alert('Пожалуйста, выберите территорию.');
                 }
             });
 
@@ -100,8 +244,8 @@
             $('#getlsCode').click(function () {
                 var lsCode = $('#lsCode').val(); // Получаем введенный почтовый индекс
                 var selectedCode = $('#ivcBase').val(); // Получаем код выбранной страны
-                var population = $('#population').text(); // Получаем население выбранной страны
-                var continent = $('#continent').text(); // Получаем континент выбранной страны
+                var code = $('#code').text(); // Получаем население выбранной страны
+                var wdsl = $('#wdsl').text(); // Получаем континент выбранной страны
 
                 if (lsCode) {
                     $.ajax({
@@ -110,14 +254,14 @@
                         data: {
                             ivcBaseCode: selectedCode,
                             lsCode: lsCode,
-                            population: population,
-                            continent: continent
+                            code: code,
+                            wdsl: wdsl
                         },
                         dataType: 'json',
                         success: function (data) {
                             $('#lsIndex').text(data.lsCode); // Выводим почтовый индекс
-                            $('#lsPopulation').text(data.population); // Выводим население
-                            $('#lsContinent').text(data.continent);   // Выводим континент
+                            $('#lscode').text(data.code); // Выводим население
+                            $('#lswdsl').text(data.wdsl);   // Выводим континент
                             $('#lsDetails').show(); // Показываем блок с деталями почтового индекса
                         },
                         error: function () {
@@ -131,4 +275,5 @@
         });
     </script>
 </body>
+
 </html>
