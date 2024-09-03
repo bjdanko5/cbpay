@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Заполнение списка выбора через AJAX</title>
+    <title>Оплата услуг(AJAX)</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body,
@@ -13,29 +13,30 @@
             font-size: 16px;
         }
 
-        body {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            grid-gap: 10px;
-        }
         
 
         #ivcBaseDetails,
         #lsDetails {
-            display: none;
+          display: none;
             /* Скрываем блоки до их наполнения */
         }
 
         .mode-switch {
-            grid-column: 2 ;
+            
             /*display: flex;*/
             display: box;
             justify-content: left;
             margin: 20px 0;
         }
-
+        #territory-btn {
+            grid-column: 2;
+        }
+        
+        #access-code-btn {
+            grid-column: 3;
+        }
         .mode-btn {
-            grid-column: 3 /span 3
+           
             background-color: #e0e0e0;
             border: none;
             padding: 10px 20px;
@@ -101,8 +102,8 @@
             <span style="color: #007bff; font-weight: bold;">Поиск : </span>
 
 
-            <button class="mode-btn active" data-mode="territory">По территории</button>
-            <button class="mode-btn" data-mode="access-code">По коду доступа</button>
+            <button class="mode-btn active" id="territory-btn" data-mode="territory">По территории</button>
+            <button class="mode-btn" id="access-code-btn" data-mode="access-code">По коду доступа</button>
 
             <div id="territory-selection" class="mode-content">
                 <!-- Здесь будет содержимое для выбора "По территории" -->
@@ -134,21 +135,21 @@
 
         </div>
         <br>
-        <div id="getLS">
-            <label for="lsCode">Лицевой счет:</label>
-            <input type="text" id="lsCode" name="lsCode" disabled>
-            <button class="toggle-mode-switch-btn" type="button" id="getlsCodeButton" disabled>Найти</button>
+        <div id="getLsData">
+            <label for="Ls">Лицевой счет:</label>
+            <input type="text" id="Ls" name="Ls" disabled>
+            <button class="toggle-mode-switch-btn" type="button" id="getlsDataButton" disabled>Обновить</button>
         </div>
-        <div id="lsDetails">
-            <p>Почтовый индекс: <span id="lsIndex"></span></p>
-            <p>Население: <span id="lscode"></span></p>
-            <p>Континент: <span id="lswdsl"></span></p>
+        <div id="lsData">
+            <p>ЛС: <span id="lsDataLs"></span></p>
+            <p>Код базы: <span id="lsDataIvcBaseCode"></span></p>
+            <p>Wdsl: <span id="lsDataIvcBaseWdsl"></span></p>
         </div>
     </form>
 
     <script>
         $(document).ready(function () {
-            // AJAX запрос для получения списка стран
+            // AJAX запрос для получения списка баз
             $.ajax({
                 url: 'soap.php',
                 type: 'POST',
@@ -198,38 +199,42 @@
             $('#toggleModeSwitchButton').click(function () {
                 event.preventDefault(); // Отменяем стандартное поведение кнопки
                 $('.mode-switch').find('*').prop('disabled', false);
+                $('#getLsData').find('*').prop('disabled', true);
+                $('#lsData').hide();
+
                 $('#territory-selection').show();
                 $('#access-code-selection').show();
                 $('#ivcBaseDetails').toggle();
                 $('#ivcBase').val($('#ivcBase option:first').val());
 
             });
-            // Обработчик нажатия на кнопку "Выбрать страну"
+            // Обработчик нажатия на кнопку "Выбрать базу"
             //$('#selectivcBase').click(function () {
             $('#ivcBase').change(function () {
 
-                //$('#selectedivcBase').val(selectedText); // Устанавливаем его в поле "Выбранная страна"
+                //$('#selectedivcBase').val(selectedText); // Устанавливаем его в поле "Выбранная база"
 
-                var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной страны 
-                var selectedCode = $('#ivcBase').val(); // Получаем код выбранной страны
+                var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной базы 
+                var selectedCode = $('#ivcBase').val(); // Получаем код выбранной базы
 
                 if (selectedCode) {
                     $.ajax({
                         url: 'soap.php',
                         type: 'POST',
-                        data: { ivcBaseCode: selectedCode }, // Передаем код страны на сервер
+                        data: { ivcBaseCode: selectedCode }, // Передаем код базы на сервер
                         dataType: 'json',
                         success: function (data) {
-                            $('#ivcBaseCode').text(data[0].code); // Выводим население
-                            $('#ivcBaseWdsl').text(data[0].wdsl);   // Выводим континент
-                            $('#ivcBaseName').text(data[0].name);   // Выводим континент
-                            $('#ivcBaseDetails').show(); // Показываем блок с деталями страны
-                            $('#lsCode').show();
-                            $('#lsCode').prop('disabled', false); // Разблокируем поле ввода почтового индекса
-                            $('#getlsCode').prop('disabled', false); // Разблокируем кнопку поиска почтового индекса
+                            $('#ivcBaseCode').text(data[0].ivcBaseCode); // Выводим население
+                            $('#ivcBaseWdsl').text(data[0].ivcBaseWdsl);   // Выводим континент
+                            $('#ivcBaseName').text(data[0].ivcBaseName);   // Выводим континент
+                            $('#ivcBaseDetails').show(); // Показываем блок с деталями базы
+                            $('#Ls').show();
+                            $('#Ls').prop('disabled', false); // Разблокируем поле ввода почтового индекса
+                            $('#getLsData').prop('disabled', false); // Разблокируем кнопку поиска почтового индекса
                             $('.mode-switch').find('*').prop('disabled', true);
                             $('#territory-selection').hide();
                             $('#access-code-selection').hide();
+                            $('#getlsDataButton').prop('disabled', false);
                         },
                         error: function () {
                             alert('Ошибка при получении данных.');
@@ -240,36 +245,34 @@
                 }
             });
 
-            // Обработчик нажатия на кнопку "Найти почтовый индекс"
-            $('#getlsCode').click(function () {
-                var lsCode = $('#lsCode').val(); // Получаем введенный почтовый индекс
-                var selectedCode = $('#ivcBase').val(); // Получаем код выбранной страны
-                var code = $('#code').text(); // Получаем население выбранной страны
-                var wdsl = $('#wdsl').text(); // Получаем континент выбранной страны
-
-                if (lsCode) {
+            // Обработчик нажатия на кнопку "Найти ЛС"
+            $('#getlsDataButton').click(function () {
+                var Ls = $('#Ls').val(); // Получаем введенный ЛС
+                var ivcBaseWdsl = $('#ivcBaseWdsl').text(); // Получаем континент выбранной базы
+                var ivcBaseCode = $('#ivcBaseCode').text(); 
+                if (Ls) {
                     $.ajax({
                         url: 'soap.php',
                         type: 'POST',
                         data: {
-                            ivcBaseCode: selectedCode,
-                            lsCode: lsCode,
-                            code: code,
-                            wdsl: wdsl
+                            ivcBaseCode: ivcBaseCode,
+                            ivcBaseWdsl: ivcBaseWdsl,
+                            Ls: Ls,   
+                            func : 'getLsData'                       
                         },
                         dataType: 'json',
                         success: function (data) {
-                            $('#lsIndex').text(data.lsCode); // Выводим почтовый индекс
-                            $('#lscode').text(data.code); // Выводим население
-                            $('#lswdsl').text(data.wdsl);   // Выводим континент
-                            $('#lsDetails').show(); // Показываем блок с деталями почтового индекса
+                            $('#lsDataLs').text(data.Ls); // Выводим ЛС
+                            $('#lsDataIvcBaseCode').text(data.ivcBaseCode); // Выводим население
+                            $('#lsDataIvcBaseWdsl').text(data.ivcBaseWdsl);   // Выводим континент
+                            $('#lsData').show(); // Показываем блок с деталями ЛС
                         },
                         error: function () {
                             alert('Ошибка при получении данных.');
                         }
                     });
                 } else {
-                    alert('Пожалуйста, введите почтовый индекс.');
+                    alert('Пожалуйста, введите ЛС.');
                 }
             });
         });

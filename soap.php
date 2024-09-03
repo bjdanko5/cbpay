@@ -52,7 +52,7 @@ function getivcBaseDetails($ivcBaseCode)
 
     try {
         $client = new SoapClient($wsdlLK, $options);
-        $response = $client->GetivcBaseDetails(['code' => $ivcBaseCode]); // Предположим, метод GetivcBaseDetails
+        $response = $client->GetivcBaseDetails(['ivcBaseCode' => $ivcBaseCode]); // Предположим, метод GetivcBaseDetails
         return json_decode($response->return,true);
         /*return [
             'code' => $response->code,
@@ -63,14 +63,14 @@ function getivcBaseDetails($ivcBaseCode)
      session_destroy(); 
     // Возвращаем тестовые данные для отладки
     $details = [
-        'RU' => ['code' => '146 million', 'wdsl' => 'Europe/Asia'],
-        'US' => ['code' => '331 million', 'wdsl' => 'North America'],
-        'CN' => ['code' => '1.4 billion', 'wdsl' => 'Asia'],
-        'JP' => ['code' => '126 million', 'wdsl' => 'Asia'],
-        'DE' => ['code' => '83 million', 'wdsl' => 'Europe'],
+        'RU' => ['ivcBaseCode' => '146 million', 'ivcBaseWdsl' => 'Europe/Asia'],
+        'US' => ['ivcBaseCode' => '331 million', 'ivcBaseWdsl' => 'North America'],
+        'CN' => ['ivcBaseCode' => '1.4 billion', 'ivcBaseWdsl' => 'Asia'],
+        'JP' => ['ivcBaseCode' => '126 million', 'ivcBaseWdsl' => 'Asia'],
+        'DE' => ['ivcBaseCode' => '83 million', 'ivcBaseWdsl' => 'Europe'],
     ];
 
-    return isset($details[$ivcBaseCode]) ? $details[$ivcBaseCode] : ['code' => 'N/A', 'wdsl' => 'N/A'];
+    return isset($details[$ivcBaseCode]) ? $details[$ivcBaseCode] : ['ivcBaseCode' => 'N/A', 'ivcBaseWdsl' => 'N/A'];
    
     }
   
@@ -78,7 +78,7 @@ function getivcBaseDetails($ivcBaseCode)
 }
 
 // Функция для поиска почтового индекса
-function getlsCodeDetails($ivcBaseCode, $lsCode, $code, $wdsl)
+function getLsData($ivcBaseCode, $ivcBaseWdsl,$Ls)
 {
     // Закомментируем реальный SOAP-запрос для отладки
     /*
@@ -104,9 +104,9 @@ function getlsCodeDetails($ivcBaseCode, $lsCode, $code, $wdsl)
 
     // Возвращаем тестовые данные для отладки
     return [
-        'lsCode' => $lsCode,
-        'code' => $code,
-        'wdsl' => $wdsl
+        'Ls' => $Ls,
+        'ivcBaseCode' => $ivcBaseCode,
+        'ivcBaseWdsl' => $ivcBaseWdsl
     ];
 }
 //print $_SERVER['REQUEST_METHOD'];
@@ -128,21 +128,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 //print var_export ($_SESSION['ivcBases'],true);
     }
 }
-    // Если запрос содержит код страны, возвращаем детали страны
-    if (isset($_POST['ivcBaseCode']) && !isset($_POST['lsCode'])) {
+    
+    if (isset($_POST['ivcBaseCode']) && !isset($_POST['Ls'])) {
         $ivcBaseCode = $_POST['ivcBaseCode'];
         $details = getivcBaseDetails($ivcBaseCode);
         echo json_encode($details);
     }
 
     // Если запрос содержит код страны и почтовый индекс, возвращаем данные почтового индекса
-    if (isset($_POST['ivcBaseCode']) && isset($_POST['lsCode'])) {
+    if (isset($_POST['ivcBaseCode']) && isset($_POST['Ls'])) {
         $ivcBaseCode = $_POST['ivcBaseCode'];
-        $lsCode = $_POST['lsCode'];
-        $code = $_POST['code'];
-        $wdsl = $_POST['wdsl'];
-        $details = getlsCodeDetails($ivcBaseCode, $lsCode, $code, $wdsl);
-        echo json_encode($details);
+        $Ls = $_POST['Ls'];
+        $ivcBaseWdsl = $_POST['ivcBaseWdsl'];
+        $LsData = getlsData($ivcBaseCode, $ivcBaseWdsl,$Ls);
+        echo json_encode($LsData);
     }
 
 ?>
