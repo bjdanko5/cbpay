@@ -76,7 +76,33 @@ function getivcBaseDetails($ivcBaseCode)
   
  
 }
+function getByAccessCodeLs($AccessCodeLs)
+{   
+    global $wsdlLK;
 
+    $options = [
+        'login' => "Администратор", 
+        'password' => "",
+        'trace' => 1,
+        'exceptions' => 1
+    ];
+
+
+    try {
+        $client = new SoapClient($wsdlLK, $options);
+        $response = $client->getByAccessCodeLs(['AccessCodeLs' => $AccessCodeLs]); // Предположим, метод GetivcBaseDetails
+        return json_decode($response->return,true);
+     } catch (SoapFault $e) {
+          session_destroy(); 
+    // Возвращаем тестовые данные для отладки
+    $details = [
+        'RU' => ['ivcBaseCode' => '146 million', 'ivcBaseWdsl' => 'Europe/Asia'],
+    ];
+
+    return $details[0]; 
+   
+    }
+}
 // Функция для поиска почтового индекса
 function getLsData($ivcBaseCode, $ivcBaseWdsl,$Ls)
 {
@@ -115,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['func']) && $_POST['func']==='getivcBases') {
 
     if (!isset($_SESSION['ivcBases'])) {
-//print "Тут1";
+
         $_SESSION = array();
         $ivcBases = getivcBases(); // Получаем список стран (тестовые данные)
         $_SESSION['ivcBases'] = $ivcBases; // Сохраняем список стран в сессии
@@ -125,8 +151,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($ivcBases);
         session_destroy();
         }
-//print var_export ($_SESSION['ivcBases'],true);
     }
+    if (isset($_POST['func']) && $_POST['func']==='getByAccessCodeLs') {
+        $AccessCodeLs = $_POST['AccessCodeLs'];
+        $getLsData= getByAccessCodeLs($AccessCodeLs); 
+        if ($getLsData[0]['Ls'] === ''){
+            $getLsData[0]['Ls'] = 'Не найден'; 
+        }
+        unset($_POST['func']);
+        echo json_encode($getLsData);
+    }    
 }
     
     if (isset($_POST['ivcBaseCode']) && !isset($_POST['Ls'])) {
