@@ -90,7 +90,7 @@
                 <select id="ivcBase" name="ivcBase">
                     <option value="">Выберите...</option>
                 </select>
-                <br>
+
             </div>
 
             <div id="access-code-selection" class="mode-content">
@@ -98,14 +98,14 @@
                 <label for="accessCodeLs"></label>
                 <input type="text" id="accessCodeLs" name="accessCodeLs">
                 </select>
-                <br>
+
             </div>
         </div>
         <div id="ivcBaseDetails" hidden>
-            <span class="blue-label">Территория : </span>
-            <button class="toggle-mode-switch-btn" id="toggleModeSwitchButton">Изменить</button>
+            <!-- <span class="blue-label">Территория : </span>
+            комментарий  <button class="toggle-mode-switch-btn" id="toggleModeSwitchButton">Изменить</button>-->
             <br>
-            <span id="ivcBaseName"></span>
+            <span id="ivcBaseName" class="blue-label"></span>
             <span id="ivcBaseCode" hidden></span>
             <span id="ivcBaseWdsl" hidden> </span>
         </div>
@@ -124,6 +124,18 @@
 
     <script>
         $(document).ready(function () {
+            /*function replaceWithPlaceholder($element) {
+              var prevElement = $element.prev();
+              var originalElement = $element.detach();
+              $('<div class="placeholder"></div>').height(originalElement.height()).insertAfter(prevElement);
+              return function restoreElement() {
+                $('.placeholder').replaceWith(originalElement);
+              };
+            }
+            const $ivcBase = $('#ivcBase');
+            window.restoreIvcBase = replaceWithPlaceholder($ivcBase);
+            window.restoreIvcBase();*/
+            //$ivcBase.show();
             // AJAX запрос для получения списка баз
             function Stage(stageName) {
                 const $modeSwitch = $('.mode-switch');
@@ -132,15 +144,14 @@
                 const $accessCodeSelection = $('#access-code-selection');
                 const $ivcBase = $('#ivcBase');
                 const $accessCodeLs = $('#accessCodeLs');
-                const $ivcBaseDetails= $('#ivcBaseDetails');
+                const $ivcBaseDetails = $('#ivcBaseDetails');
                 const $Ls = $('#Ls');
                 const $getLsData = $('#getLsData');
                 const $lsData = $('#lsData');
-                
+
 
                 const stages = {
                     'Инициализация': () => {
-                        $modeSwitch.prop('disabled', false);
                         $ivcBase.val($ivcBase.find('option:first').val());
                         $Ls.val('');
                         $getLsData.prop('disabled', true);
@@ -152,18 +163,35 @@
                         $lsData.hide();
                     },
                     'Выбран режим по территории': () => {
-                        $modeSwitch.prop('disabled', true);
                         $territorySelection.addClass('active');
                         $accessCodeSelection.removeClass('active');
+                        $territorySelection.show();
+                        $accessCodeSelection.hide();
+                        $ivcBase.show();
+                        $ivcBaseDetails.hide();
+                        $lsData.hide();
+                        
+                        $Ls.prop('disabled', true);
+                        $getLsData.prop('disabled', true);
+                        $getlsDataButton.prop('disabled', true);
+                        $Ls.val('');
                     },
                     'Выбран режим по коду доступа': () => {
-                        $modeSwitch.prop('disabled', true);
                         $accessCodeSelection.addClass('active');
                         $territorySelection.removeClass('active');
+                        $accessCodeSelection.show();
+                        $territorySelection.hide();
+                        $accessCodeLs.show();
                         $accessCodeLs.val('870917039058-');
+                        $ivcBaseDetails.hide();
+                        $lsData.hide();
+                        
+                        $Ls.prop('disabled', true);
+                        $getLsData.prop('disabled', true);
+                        $getlsDataButton.prop('disabled', true);
+                        $Ls.val('');
                     },
                     'Выбрана территория': () => {
-                        $modeSwitch.prop('disabled', true);
                         $territorySelection.removeClass('active');
                         $accessCodeSelection.removeClass('active');
                         $ivcBase.hide();
@@ -175,10 +203,11 @@
                         $getlsDataButton.prop('disabled', false);
                     },
                     'Выбран код доступа': () => {
-                        $modeSwitch.prop('disabled', true);
+                        //$modeSwitch.prop('disabled', true);
                         $territorySelection.removeClass('active');
                         $accessCodeSelection.removeClass('active');
                         $ivcBase.hide();
+                        //window.restoreIvcBase = replaceWithPlaceholder($ivcBase);
                         $ivcBaseDetails.show();
                         $Ls.show();
                         $lsData.hide();
@@ -249,9 +278,9 @@
                         data: { ivcBaseCode: selectedCode }, // Передаем код базы на сервер
                         dataType: 'json',
                         success: function (data) {
-                            $('#ivcBaseCode').text(data[0].ivcBaseCode); // Выводим население
-                            $('#ivcBaseWdsl').text(data[0].ivcBaseWdsl);   // Выводим континент
-                            $('#ivcBaseName').text(data[0].ivcBaseName);   // Выводим континент
+                            $('#ivcBaseCode').text(data[0].ivcBaseCode);
+                            $('#ivcBaseWdsl').text(data[0].ivcBaseWdsl);
+                            $('#ivcBaseName').text(data[0].ivcBaseName);
                             Stage('Выбрана территория');
                         },
                         error: function () {
