@@ -76,7 +76,7 @@ function getivcBaseDetails($ivcBaseCode)
   
  
 }
-function getByAccessCodeLs($AccessCodeLs)
+function getByaccessCodeLs($accessCodeLs)
 {   
     global $wsdlLK;
 
@@ -90,7 +90,7 @@ function getByAccessCodeLs($AccessCodeLs)
 
     try {
         $client = new SoapClient($wsdlLK, $options);
-        $response = $client->getByAccessCodeLs(['AccessCodeLs' => $AccessCodeLs]); // Предположим, метод GetivcBaseDetails
+        $response = $client->getByaccessCodeLs(['accessCodeLs' => $accessCodeLs]); // Предположим, метод GetivcBaseDetails
         return json_decode($response->return,true);
      } catch (SoapFault $e) {
           session_destroy(); 
@@ -152,9 +152,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         session_destroy();
         }
     }
-    if (isset($_POST['func']) && $_POST['func']==='getByAccessCodeLs') {
-        $AccessCodeLs = $_POST['AccessCodeLs'];
-        $getLsData= getByAccessCodeLs($AccessCodeLs); 
+    if (isset($_POST['func']) && $_POST['func']==='getByaccessCodeLs') {
+        $accessCodeLs = $_POST['accessCodeLs'];
+        $getLsData= getByaccessCodeLs($accessCodeLs); 
         if ($getLsData[0]['Ls'] === ''){
             $getLsData[0]['Ls'] = 'Не найден'; 
         }

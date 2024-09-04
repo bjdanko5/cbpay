@@ -95,8 +95,8 @@
 
             <div id="access-code-selection" class="mode-content">
                 <!-- Здесь будет содержимое для выбора "По коду доступа" -->
-                <label for="AccessCodeLs"></label>
-                <input type="text" id="AccessCodeLs" name="AccessCodeLs">
+                <label for="accessCodeLs"></label>
+                <input type="text" id="accessCodeLs" name="accessCodeLs">
                 </select>
                 <br>
             </div>
@@ -125,85 +125,70 @@
     <script>
         $(document).ready(function () {
             // AJAX запрос для получения списка баз
-            function CleanStage(StageName) {
-                const territorySelection = $('#territory-selection');
-                const accessCodeSelection = $('#access-code-selection');
+            function Stage(stageName) {
+                const $modeSwitch = $('.mode-switch');
+                const $getlsDataButton = $('#getlsDataButton');
+                const $territorySelection = $('#territory-selection');
+                const $accessCodeSelection = $('#access-code-selection');
+                const $ivcBase = $('#ivcBase');
+                const $accessCodeLs = $('#accessCodeLs');
+                const $ivcBaseDetails= $('#ivcBaseDetails');
+                const $Ls = $('#Ls');
+                const $getLsData = $('#getLsData');
+                const $lsData = $('#lsData');
+                
 
-                switch (StageName) {
-                    case 'Инициализация':
-                        $('.mode-switch').find('*').prop('disabled', false);
+                const stages = {
+                    'Инициализация': () => {
+                        $modeSwitch.prop('disabled', false);
+                        $ivcBase.val($ivcBase.find('option:first').val());
+                        $Ls.val('');
+                        $getLsData.prop('disabled', true);
+                        $territorySelection.addClass('active');
+                        $accessCodeSelection.removeClass('active');
+                        $ivcBase.show();
+                        $ivcBaseDetails.hide();
+                        $Ls.show();
+                        $lsData.hide();
+                    },
+                    'Выбран режим по территории': () => {
+                        $modeSwitch.prop('disabled', true);
+                        $territorySelection.addClass('active');
+                        $accessCodeSelection.removeClass('active');
+                    },
+                    'Выбран режим по коду доступа': () => {
+                        $modeSwitch.prop('disabled', true);
+                        $accessCodeSelection.addClass('active');
+                        $territorySelection.removeClass('active');
+                        $accessCodeLs.val('870917039058-');
+                    },
+                    'Выбрана территория': () => {
+                        $modeSwitch.prop('disabled', true);
+                        $territorySelection.removeClass('active');
+                        $accessCodeSelection.removeClass('active');
+                        $ivcBase.hide();
+                        $ivcBaseDetails.show();
+                        $Ls.show();
+                        $lsData.hide();
+                        $Ls.prop('disabled', false);
+                        $getLsData.prop('disabled', false);
+                        $getlsDataButton.prop('disabled', false);
+                    },
+                    'Выбран код доступа': () => {
+                        $modeSwitch.prop('disabled', true);
+                        $territorySelection.removeClass('active');
+                        $accessCodeSelection.removeClass('active');
+                        $ivcBase.hide();
+                        $ivcBaseDetails.show();
+                        $Ls.show();
+                        $lsData.hide();
+                        $Ls.prop('disabled', false);
+                        $getLsData.prop('disabled', false);
+                        $getlsDataButton.prop('disabled', false);
+                    }
+                };
 
-                        $('#ivcBase').val($('#ivcBase option:first').val());
-                        $('#AccessCodeLs').val('');
-
-                        $('#getLsData').find('*').prop('disabled', true);
-
-                        $('#Ls').val('');
-
-                        break;
-                    case 'Выбран режим по территории':
-                        break;
-                    case 'Выбран режим по коду доступа':
-                        break;
-                    case 'Выбрана территория':
-                        $('.mode-switch').find('*').prop('disabled', true);
-                        $('#Ls').prop('disabled', false);
-                        $('#getLsData').prop('disabled', false);
-                        $('#getlsDataButton').prop('disabled', false);
-                        break;
-                    case 'Выбран код доступа':
-                        $('.mode-switch').find('*').prop('disabled', true);
-                        $('#Ls').prop('disabled', false); 
-                        $('#getLsData').prop('disabled', false); 
-                        $('#getlsDataButton').prop('disabled', false);
-                        break;
-
-                }
-            }
-
-            function Stage(StageName) {
-                const territorySelection = $('#territory-selection');
-                const accessCodeSelection = $('#access-code-selection');
-                $('.mode-switch').show();
-                switch (StageName) {
-                    case 'Инициализация':
-                        territorySelection.show().addClass('active');
-                        accessCodeSelection.hide().removeClass('active');
-                        $('#ivcBase').show();
-                        $('#ivcBaseDetails').hide();
-                        $('#Ls').show();
-                        $('#lsData').hide();
-                        break;
-                    case 'Выбран режим по территории':
-                        territorySelection.show().addClass('active');
-                        accessCodeSelection.hide().removeClass('active');
-                        break;
-                    case 'Выбран режим по коду доступа':
-                        accessCodeSelection.show().addClass('active');
-                        territorySelection.hide().removeClass('active');
-                        $('#AccessCodeLs').val('870917039058-');
-                        break;
-                    case 'Выбрана территория':
-                        territorySelection.hide().removeClass('active');
-                        accessCodeSelection.hide().removeClass('active');
-                        $('#ivcBase').hide();
-
-                        $('#ivcBaseDetails').show();
-                        $('#Ls').show();
-                        $('#lsData').hide();
-                        break;
-                    case 'Выбран код доступа':
-                        territorySelection.hide().removeClass('active');
-                        accessCodeSelection.hide().removeClass('active');
-                        $('#ivcBase').hide();
-
-                        $('#ivcBaseDetails').show(); 
-                        $('#Ls').show();
-                        $('#lsData').hide();
-                        break;
-
-                }
-                CleanStage(StageName);
+                stages[stageName]();
             }
 
             Stage('Инициализация');
@@ -278,15 +263,15 @@
                 }
             });
 
-            $('#AccessCodeLs').change(function () {
-                var AccessCodeLs = $('#AccessCodeLs').val(); // Получаем код доступа ЛС
-                if (AccessCodeLs) {
+            $('#accessCodeLs').change(function () {
+                var accessCodeLs = $('#accessCodeLs').val(); // Получаем код доступа ЛС
+                if (accessCodeLs) {
                     $.ajax({
                         url: 'soap.php',
                         type: 'POST',
                         data: {
-                            AccessCodeLs: AccessCodeLs,
-                            func: 'getByAccessCodeLs',
+                            accessCodeLs: accessCodeLs,
+                            func: 'getByaccessCodeLs',
                         }, // Передаем код доступа ЛС на сервер
                         dataType: 'json',
                         success: function (data) {
