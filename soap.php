@@ -103,7 +103,7 @@ function getByaccessCodeLs($accessCodeLs)
     }
 }
 // Функция для поиска почтового индекса
-function getLsData($ivcBaseCode, $ivcBaseWdsl,$Ls)
+function getLsData($ivcBaseCode, $ivcBaseWdsl,$Ls,$codeSB='')
 {
     global $wsdlLK;
 
@@ -116,7 +116,7 @@ function getLsData($ivcBaseCode, $ivcBaseWdsl,$Ls)
 
     try {
      $client = new SoapClient($wsdlLK, $options);
-     $response = $client->getLsData(['ivcBaseCode' => $ivcBaseCode,'Ls' => $Ls]); 
+     $response = $client->getLsData(['ivcBaseCode' => $ivcBaseCode,'Ls' => $Ls,'codeSB' => $codeSB]); 
      return json_decode($response->return,true);
      } catch (SoapFault $e) {
           session_destroy(); 
@@ -167,7 +167,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ivcBaseCode = $_POST['ivcBaseCode'];
         $Ls = $_POST['Ls'];
         $ivcBaseWdsl = $_POST['ivcBaseWdsl'];
-        $LsData = getlsData($ivcBaseCode, $ivcBaseWdsl,$Ls);
+        $codeSB = $_POST['codeSB'];
+        $LsData = getlsData($ivcBaseCode, $ivcBaseWdsl,$Ls,$codeSB);
         echo json_encode($LsData);
     }
 
