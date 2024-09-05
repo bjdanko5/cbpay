@@ -90,50 +90,42 @@ function getByaccessCodeLs($accessCodeLs)
 
     try {
         $client = new SoapClient($wsdlLK, $options);
-        $response = $client->getByaccessCodeLs(['accessCodeLs' => $accessCodeLs]); // Предположим, метод GetivcBaseDetails
+        $response = $client->getByaccessCodeLs(['accessCodeLs' => $accessCodeLs]); 
         return json_decode($response->return,true);
      } catch (SoapFault $e) {
           session_destroy(); 
     // Возвращаем тестовые данные для отладки
     $details = [
-        'RU' => ['ivcBaseCode' => '146 million', 'ivcBaseWdsl' => 'Europe/Asia'],
+        'Реквизиты' => ['ivcBaseCode' => '146 million', 'ivcBaseWdsl' => 'Europe/Asia','Ls' => 'Ошибка запроса...','Address'=>'Ошибка запроса...'],
     ];
 
-    return $details[0]; 
-   
+    return $details;
     }
 }
 // Функция для поиска почтового индекса
 function getLsData($ivcBaseCode, $ivcBaseWdsl,$Ls)
 {
-    // Закомментируем реальный SOAP-запрос для отладки
-    /*
-    $wsdl = "http://example.com/your-soap-api?wsdl";
+    global $wsdlLK;
+
     $options = [
+        'login' => "Администратор", 
+        'password' => "",
         'trace' => 1,
         'exceptions' => 1
     ];
 
     try {
-        $client = new SoapClient($wsdl, $options);
-        $response = $client->GetlsCodeDetails(['code' => $ivcBaseCode, 'lsCode' => $lsCode]);
-
-        return [
-            'lsCode' => $response->lsCode,
-            'code' => $response->code,
-            'wdsl' => $response->wdsl
-        ];
-    } catch (SoapFault $e) {
-        return ['lsCode' => $lsCode, 'code' => 'N/A', 'wdsl' => 'N/A'];
-    }
-    */
-
-    // Возвращаем тестовые данные для отладки
-    return [
-        'Ls' => $Ls,
-        'ivcBaseCode' => $ivcBaseCode,
-        'ivcBaseWdsl' => $ivcBaseWdsl
+     $client = new SoapClient($wsdlLK, $options);
+     $response = $client->getLsData(['ivcBaseCode' => $ivcBaseCode,'Ls' => $Ls]); 
+     return json_decode($response->return,true);
+     } catch (SoapFault $e) {
+          session_destroy(); 
+    $details = [
+        'АдресЛС'=> 'отладка АдресЛС',
+        'КодыСБ'=> ['53356','95677']
     ];
+    return $details;
+    }
 }
 //print $_SERVER['REQUEST_METHOD'];
 // Обработка запросов
@@ -151,12 +143,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($ivcBases);
         session_destroy();
         }
+        unset($_POST['func']);
     }
     if (isset($_POST['func']) && $_POST['func']==='getByaccessCodeLs') {
         $accessCodeLs = $_POST['accessCodeLs'];
         $getLsData= getByaccessCodeLs($accessCodeLs); 
-        if ($getLsData[0]['Ls'] === ''){
-            $getLsData[0]['Ls'] = 'Не найден'; 
+        if ($getLsData['Реквизиты']['Ls'] === ''){
+            $getLsData['Реквизиты']['Ls'] = 'Не найден'; 
         }
         unset($_POST['func']);
         echo json_encode($getLsData);
@@ -169,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($details);
     }
 
-    // Если запрос содержит код страны и почтовый индекс, возвращаем данные почтового индекса
+   
     if (isset($_POST['ivcBaseCode']) && isset($_POST['Ls'])) {
         $ivcBaseCode = $_POST['ivcBaseCode'];
         $Ls = $_POST['Ls'];

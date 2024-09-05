@@ -48,7 +48,22 @@
             max-height: 500px;
         }
 
-        .toggle-mode-switch-btn {
+        .get-ls-data-btn {
+            background-color: #e0e0e0;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .get-ls-data-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /*       .toggle-mode-switch-btn {
             background-color: #007bff;
             color: #fff;
             padding: 8px 16px;
@@ -65,11 +80,36 @@
         .toggle-mode-switch-btn:focus {
             outline: none;
         }
-
+*/
         .blue-label {
             color: #007bff;
             font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
         }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .editable {
+            background-color: #ffffcc;
+        }
+        .editable input {
+         text-align: right;
+  }
     </style>
 </head>
 
@@ -113,13 +153,31 @@
         <div id="getLsData">
             <label for="Ls">Лицевой счет:</label>
             <input type="text" id="Ls" name="Ls" disabled>
-            <button class="toggle-mode-switch-btn" type="button" id="getlsDataButton" disabled>Обновить</button>
+            <button class="get-ls-data-btn" type="button" id="getlsDataButton" disabled>Детализация</button>
+            <br>
+            <p><span id="lsAddress"></span></p>
         </div>
+
         <div id="lsData" hidden>
-            <p>ЛС: <span id="lsDataLs"></span></p>
-            <p>Код базы: <span id="lsDataIvcBaseCode"></span></p>
-            <p>Wdsl: <span id="lsDataIvcBaseWdsl"></span></p>
+            <label for="CodeSB">Коды услуг СБ</label>
+            <select id="CodeSB" name="CodeSB">
+                <option value="">Выберите...</option>
+            </select>
         </div>
+        <br>
+        <label for="tablePO"  class="blue-label">Задоложенность </label>
+        <div style="height: 10px;"></div>
+        <table id="tablePO">
+            <thead>
+                <tr>
+                    <th>Получатель</th>
+                    <th>К оплате</th>
+                    <th>КодПолучателя</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </form>
 
     <script>
@@ -148,6 +206,7 @@
                 const $Ls = $('#Ls');
                 const $getLsData = $('#getLsData');
                 const $lsData = $('#lsData');
+                const $Address = $('#lsAddress');
 
 
                 const stages = {
@@ -161,6 +220,9 @@
                         $ivcBaseDetails.hide();
                         $Ls.show();
                         $lsData.hide();
+                        $getlsDataButton.prop('disabled', true);
+                        $getlsDataButton.removeClass('active');
+                        $Address.hide();
                     },
                     'Выбран режим по территории': () => {
                         $territorySelection.addClass('active');
@@ -170,10 +232,11 @@
                         $ivcBase.show();
                         $ivcBaseDetails.hide();
                         $lsData.hide();
-                        
+                        $Address.hide();
                         $Ls.prop('disabled', true);
                         $getLsData.prop('disabled', true);
                         $getlsDataButton.prop('disabled', true);
+                        $getlsDataButton.removeClass('active');
                         $Ls.val('');
                     },
                     'Выбран режим по коду доступа': () => {
@@ -182,13 +245,15 @@
                         $accessCodeSelection.show();
                         $territorySelection.hide();
                         $accessCodeLs.show();
-                        $accessCodeLs.val('870917039058-');
+                        $accessCodeLs.val('970017035729-');
                         $ivcBaseDetails.hide();
                         $lsData.hide();
-                        
+                        $Address.hide();
                         $Ls.prop('disabled', true);
                         $getLsData.prop('disabled', true);
                         $getlsDataButton.prop('disabled', true);
+                        $getlsDataButton.removeClass('active');
+
                         $Ls.val('');
                     },
                     'Выбрана территория': () => {
@@ -198,9 +263,11 @@
                         $ivcBaseDetails.show();
                         $Ls.show();
                         $lsData.hide();
+                        $Address.hide();
                         $Ls.prop('disabled', false);
                         $getLsData.prop('disabled', false);
                         $getlsDataButton.prop('disabled', false);
+                        $getlsDataButton.addClass('active');
                     },
                     'Выбран код доступа': () => {
                         //$modeSwitch.prop('disabled', true);
@@ -210,10 +277,12 @@
                         //window.restoreIvcBase = replaceWithPlaceholder($ivcBase);
                         $ivcBaseDetails.show();
                         $Ls.show();
+                        $Address.show();
                         $lsData.hide();
                         $Ls.prop('disabled', false);
                         $getLsData.prop('disabled', false);
                         $getlsDataButton.prop('disabled', false);
+                        $getlsDataButton.addClass('active');
                     }
                 };
 
@@ -261,10 +330,10 @@
                 }
             });
 
-            $('#toggleModeSwitchButton').click(function () {
-                event.preventDefault(); // Отменяем стандартное поведение кнопки
-                Stage('Инициализация');
-            });
+            /*             $('#toggleModeSwitchButton').click(function () {
+                            event.preventDefault(); // Отменяем стандартное поведение кнопки
+                            Stage('Инициализация');
+                        }); */
 
             $('#ivcBase').change(function () {
 
@@ -304,21 +373,14 @@
                         }, // Передаем код доступа ЛС на сервер
                         dataType: 'json',
                         success: function (data) {
-                            $('#ivcBaseCode').text(data[0].ivcBaseCode); // Выводим население
-                            $('#ivcBaseWdsl').text(data[0].ivcBaseWdsl);   // Выводим континент
-                            $('#ivcBaseName').text(data[0].ivcBaseName);   // Выводим континент
-                            $('#Ls').val(data[0].Ls);
+                            $('#ivcBaseCode').text(data['Реквизиты'].ivcBaseCode);
+                            $('#ivcBaseWdsl').text(data['Реквизиты'].ivcBaseWdsl);
+                            $('#ivcBaseName').text(data['Реквизиты'].ivcBaseName);
+                            $('#Ls').val(data['Реквизиты'].Ls);
+                            $('#lsAddress').text(data['Реквизиты'].Address);
                             Stage('Выбран код доступа');
 
-/*                             $('#ivcBaseDetails').show(); // Показываем блок с деталями базы
-                            $('#Ls').show();
-                            $('#Ls').prop('disabled', false); // Разблокируем поле ввода почтового индекса
-                            $('#getLsData').prop('disabled', false); // Разблокируем кнопку поиска почтового индекса
-                            $('.mode-switch').find('*').prop('disabled', true);
-                            $('#territory-selection').hide();
-                            $('#access-code-selection').hide();
-                            $('#getlsDataButton').prop('disabled', false);
- */                        },
+                        },
                         error: function () {
                             alert('Ошибка при получении данных.');
                         }
@@ -345,10 +407,28 @@
                         },
                         dataType: 'json',
                         success: function (data) {
-                            $('#lsDataLs').text(data.Ls); // Выводим ЛС
-                            $('#lsDataIvcBaseCode').text(data.ivcBaseCode); // Выводим население
-                            $('#lsDataIvcBaseWdsl').text(data.ivcBaseWdsl);   // Выводим континент
+                            $('#lsAddress').text(data['ДанныеЛС']['АдресЛС']);
                             $('#lsData').show(); // Показываем блок с деталями ЛС
+                            var select = $('#CodeSB');
+                            select.html(''); // Очистим список перед добавлением данных
+                            $.each(data['ДанныеЛС']['КодыСБ'], function (index, value) {
+                                select.append($('<option>', {
+                                    value: index, // или другое уникальное значение
+                                    text: value  // текст опции
+                                }));
+                            });
+                            var tablePO = $('#tablePO');
+                            tablePO.find('tbody').empty();
+                            $.each(data['ДанныеЛС']['ПолучателиСБ'], function (index, value) {
+                                var row = $('<tr>');
+                                row.append($('<td>').text(value.Получатель));
+                                var editableCell = $('<td class="editable">');
+                                editableCell.append($('<input type="text" value="' + value.Остаток + '">'));
+                                row.append(editableCell);
+                                row.append($('<td>').text(value.КодПолучателя));
+                                tablePO.find('tbody').append(row);
+                            });
+
                         },
                         error: function () {
                             alert('Ошибка при получении данных.');
