@@ -63,24 +63,6 @@
             color: white;
         }
 
-        /*       .toggle-mode-switch-btn {
-            background-color: #007bff;
-            color: #fff;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            height: 40px;
-        }
-
-        .toggle-mode-switch-btn:hover {
-            background-color: #0056b3;
-        }
-
-        .toggle-mode-switch-btn:focus {
-            outline: none;
-        }
-*/
         .blue-label {
             color: #007bff;
             font-weight: bold;
@@ -90,7 +72,6 @@
 
         table {
             border-collapse: collapse;
-            width: 100%;
         }
 
         th,
@@ -110,6 +91,20 @@
 
         .editable input {
             text-align: right;
+        }
+
+        #tablePO th,
+        #tablePO td {
+            width: auto;
+        }
+
+        /* #tablePO th:nth-child(2), #tablePO td:nth-child(2) {
+  min-width: inherit;
+}
+ */
+        #totalTablePO {
+            text-align: right;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -186,7 +181,8 @@
                 </tr>
             </tfoot>
         </table>
-        <label for="tableIPU">Приборы учёта</label>
+        <br>
+        <label for="tableIPU" class="blue-label">Приборы учёта</label>
         <div style="height: 10px;"></div>
         <table id="tableIPU">
             <thead>
@@ -320,6 +316,13 @@
             }
 
             Stage('Инициализация');
+            $('#tablePO').on('input', '.editable input', function () {
+                var sum = 0;
+                $('#tablePO .editable input').each(function () {
+                    sum += parseFloat($(this).val().replace(',', '.'));
+                });
+                $('#totalTablePO').text(sum.toFixed(1).replace('.', ','));
+            });
 
             $.ajax({
                 url: 'soap.php',
