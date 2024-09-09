@@ -63,6 +63,21 @@
             color: white;
         }
 
+        .pay-btn {
+            background-color: #e0e0e0;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .pay-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+
         .blue-label {
             color: #007bff;
             font-weight: bold;
@@ -111,6 +126,26 @@
             text-align: left;
             padding: 10px;
         }
+
+        .loader {
+            border: 5px dashed #ccc;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
@@ -138,7 +173,8 @@
                 <!-- Здесь будет содержимое для выбора "По коду доступа" -->
                 <label for="accessCodeLs"></label>
                 <input type="text" id="accessCodeLs" name="accessCodeLs">
-                </select>
+                <div class="loader"></div>
+
 
             </div>
         </div>
@@ -155,6 +191,7 @@
             <label for="Ls">Лицевой счет:</label>
             <input type="text" id="Ls" name="Ls" disabled>
             <button class="get-ls-data-btn" type="button" id="getlsDataButton" disabled>Детализация</button>
+            <div class="loader"></div>
             <br>
             <p><span id="lsAddress"></span></p>
         </div>
@@ -164,50 +201,52 @@
             <select id="CodeSB" name="CodeSB">
                 <option value="">Выберите...</option>
             </select>
-        </div>
-        <br>
 
-        <table id="tablePO">
-            <caption class="blue-label">Задоложенность</caption>
-            <thead>
-                <tr>
-                    <th>Получатель</th>
-                    <th>К оплате</th>
-                    <th hidden="">КодПолучателя</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td>ВСЕГО К ОПЛАТЕ:</td>
-                    <td id="totalTablePO"></td>
-                    <td hidden="">0</td>
-                </tr>
-            </tfoot>
-        </table>
-        <br>
-        <table id="tableIPU">
-            <caption class="blue-label">Приборы учёта</caption>
-            <thead>
-                <tr>
-                    <th>Прибор</th>
-                    <th>Заводской номер</th>
-                    <th>Предыдущее показание</th>
-                    <th>Показание текущее</th>
-                    <th hidden="">Код прибора в 1С</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!--                 <tr>
+            <br>
+
+            <table id="tablePO">
+                <caption class="blue-label">Задоложенность</caption>
+                <thead>
+                    <tr>
+                        <th>Получатель</th>
+                        <th>К оплате</th>
+                        <th hidden="">КодПолучателя</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>ВСЕГО К ОПЛАТЕ:</td>
+                        <td id="totalTablePO"></td>
+                        <td hidden="">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <br>
+            <table id="tableIPU">
+                <caption class="blue-label">Приборы учёта</caption>
+                <thead>
+                    <tr>
+                        <th>Прибор</th>
+                        <th>Заводской номер</th>
+                        <th>Предыдущее показание</th>
+                        <th>Показание текущее</th>
+                        <th hidden="">Код прибора в 1С</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--                 <tr>
                     <td>ХВ 27040908</td>
                     <td>27040908</td>
                     <td>555</td>
                     <td><input id="pok" class="form-control" max="15" min="1" step="1" type="number"></td>
                     <td hidden="">000000035729</td>
                 </tr> -->
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+            <button class="pay-btn" type="button" id="payButton" disabled>Оплатить</button>
+        </div>
     </form>
 
     <script>
@@ -237,7 +276,8 @@
                 const $getLsData = $('#getLsData');
                 const $lsData = $('#lsData');
                 const $Address = $('#lsAddress');
-
+                const $loader = $('.loader');
+                const $payButton = $('#payButton');
 
                 const stages = {
                     'Инициализация': () => {
@@ -250,9 +290,15 @@
                         $ivcBaseDetails.hide();
                         $Ls.show();
                         $lsData.hide();
+                        $lsData.children().hide;
                         $getlsDataButton.prop('disabled', true);
                         $getlsDataButton.removeClass('active');
                         $Address.hide();
+                        $loader.hide();
+                        $payButton.prop('disabled', true);
+                        $payButton.removeClass('active');
+                        $('#payButton').removeData('summa');
+                        $('#payButton').text('Оплатить ');
                     },
                     'Выбран режим по территории': () => {
                         $territorySelection.addClass('active');
@@ -268,6 +314,8 @@
                         $getlsDataButton.prop('disabled', true);
                         $getlsDataButton.removeClass('active');
                         $Ls.val('');
+                        $('#payButton').removeData('summa');
+                        $('#payButton').text('Оплатить ');
                     },
                     'Выбран режим по коду доступа': () => {
                         $accessCodeSelection.addClass('active');
@@ -283,8 +331,10 @@
                         $getLsData.prop('disabled', true);
                         $getlsDataButton.prop('disabled', true);
                         $getlsDataButton.removeClass('active');
+                        $('#payButton').text('Оплатить ');
 
                         $Ls.val('');
+                        $('#payButton').removeData('summa');
                     },
                     'Выбрана территория': () => {
                         $territorySelection.removeClass('active');
@@ -298,6 +348,8 @@
                         $getLsData.prop('disabled', false);
                         $getlsDataButton.prop('disabled', false);
                         $getlsDataButton.addClass('active');
+                        $('#payButton').removeData('summa');
+                        $('#payButton').text('Оплатить ');
                     },
                     'Выбран код доступа': () => {
                         //$modeSwitch.prop('disabled', true);
@@ -313,7 +365,34 @@
                         $getLsData.prop('disabled', false);
                         $getlsDataButton.prop('disabled', false);
                         $getlsDataButton.addClass('active');
+                        $payButton.prop('disabled', false);
+                        $payButton.addClass('active');
+                        $('#payButton').removeData('summa');
+                        $('#payButton').text('Оплатить ');
+
+                    },
+                    'Детализация': () => {
+                        //$modeSwitch.prop('disabled', true);
+                        $territorySelection.removeClass('active');
+                        $accessCodeSelection.removeClass('active');
+                        $ivcBase.hide();
+                        //window.restoreIvcBase = replaceWithPlaceholder($ivcBase);
+                        $ivcBaseDetails.show();
+                        $Ls.show();
+                        $Address.show();
+                        $lsData.show();
+                        $Ls.prop('disabled', false);
+                        $getLsData.prop('disabled', false);
+                        $getlsDataButton.prop('disabled', false);
+                        $getlsDataButton.addClass('active');
+                        $payButton.prop('disabled', false);
+                        $payButton.addClass('active');
+                        $('#payButton').removeData('summa');
+                        $('#payButton').text('Оплатить ');
+
                     }
+
+
                 };
 
                 stages[stageName]();
@@ -327,30 +406,29 @@
                     sum += parseFloat($(this).val().replace(',', '.'));
                 });
                 $('#totalTablePO').text(sum.toFixed(1).replace('.', ','));
+                Stage('Детализация');
             });
-            $('#tablePO, #tableIPU').find('.editable input').on('keydown', function (e) {
-                if (e.which === 13) { // Enter
-                    e.preventDefault(); // предотвратить дефолтное поведение
-                    var nextInput = $(this).closest('tr').next('tr').find('.editable input');
-                    if (nextInput.length > 0) {
-                        nextInput.focus();
-                    } else {
-                        $(this).focus(); // оставить фокус на текущем input
-                    }
-                }
-            });
+
             $('#accessCodeLs').on('keydown', function (e) {
                 if (e.which === 13) { // Enter
                     e.preventDefault(); // предотвратить дефолтное поведение
                     $('#accessCodeLs').trigger('change');
-                }    
+                }
             });
 
-            $('#myForm').on('keypress', function (e) {
+            $('#myForm').on('keydown', function (e) {
                 if (e.which === 13) { // Enter
-                      e.preventDefault(); // предотвратить дефолтное поведение
-                }      
-              
+                    e.preventDefault(); // предотвратить дефолтное поведение
+                    if ($(':focus').is('.editable input')) {
+                        var nextInput = $(':focus').closest('tr').next('tr').find('.editable input');
+                        if (nextInput.length > 0) {
+                            nextInput.focus();
+                        } else {
+                            $(':focus').focus(); // оставить фокус на текущем input
+                        }
+                    }
+                }
+
             });
 
             $.ajax({
@@ -425,6 +503,9 @@
 
             $('#accessCodeLs').change(function () {
                 event.preventDefault(); // Отменяем стандартное поведение кнопки
+                if ($(':focus').length === 0) {
+                    return;
+                }
                 var accessCodeLs = $('#accessCodeLs').val(); // Получаем код доступа ЛС
                 if (accessCodeLs) {
                     $.ajax({
@@ -435,6 +516,12 @@
                             func: 'getByaccessCodeLs',
                         }, // Передаем код доступа ЛС на сервер
                         dataType: 'json',
+                        beforeSend: function () {
+                            $('#access-code-selection .loader').show();
+                        },
+                        complete: function () {
+                            $('#access-code-selection .loader').hide();
+                        },
                         success: function (data) {
                             $('#ivcBaseCode').text(data['Реквизиты'].ivcBaseCode);
                             $('#ivcBaseWdsl').text(data['Реквизиты'].ivcBaseWdsl);
@@ -442,6 +529,7 @@
                             $('#Ls').val(data['Реквизиты'].Ls);
                             $('#lsAddress').text(data['Реквизиты'].Address);
                             Stage('Выбран код доступа');
+                            $('#getlsDataButton').trigger('click');
 
                         },
                         error: function () {
@@ -452,7 +540,63 @@
                     alert('Пожалуйста, выберите код доступа.');
                 }
             });
+            function handleGetLsDataSuccess(data) {
+                const lsAddress = data['ДанныеЛС']['АдресЛС'];
+                const lsData = data['ДанныеЛС'];
+                const CodeSB = data['ДанныеЛС']['КодыСБ'];
+                updateCodeSB(CodeSB);
+                updateLsAddress(lsAddress);
+                updateLsData(lsData);
+                Stage('Детализация');
+            }
+            function updateCodeSB(CodeSB) {
+             var select = $('#CodeSB');
+                select.html(''); // Очистим список перед добавлением данных
+                $.each(CodeSB, function (index, value) {
+                    select.append($('<option>', {
+                        value: index, // или другое уникальное значение
+                        text: value  // текст опции
+                    }));
+                });
 
+            }
+
+            function updateLsAddress(address) {
+                const lsAddressElement = $('#lsAddress');
+                lsAddressElement.text(address);
+            }
+
+            function updateLsData(data) {
+                const tablePO = $('#tablePO');
+                const tableIPU = $('#tableIPU');
+
+                updateTablePO(tablePO, data['ПолучателиСБ']);
+                updateTableIPU(tableIPU, data['Приборы']);
+            }
+
+            function updateTablePO(table, data) {
+                table.find('tbody').empty();
+                data.forEach((item) => {
+                    const row = $('<tr>');
+                    row.append($('<td>').text(item.Получатель));
+                    row.append($('<td class="editable">').append($('<input type="text" value="' + item.Остаток + '">')));
+                    row.append($('<td hidden="">').text(item.КодПолучателя));
+                    table.find('tbody').append(row);
+                });
+            }
+
+            function updateTableIPU(table, data) {
+                table.find('tbody').empty();
+                data.forEach((item) => {
+                    const row = $('<tr>');
+                    row.append($('<td>').text(item.Прибор));
+                    row.append($('<td>').text(item.ЗаводскойНомер));
+                    row.append($('<td>').text(item.ПредыдущееПоказание));
+                    row.append($('<td class="editable">').append($('<input type="text" value="' + item.ТекущееПоказание + '">')));
+                    row.append($('<td hidden="">').text(item.КодПрибора));
+                    table.find('tbody').append(row);
+                });
+            }
             // Обработчик нажатия на кнопку "Найти ЛС"
             $('#getlsDataButton').click(function () {
                 var Ls = $('#Ls').val(); // Получаем введенный ЛС
@@ -470,47 +614,15 @@
                             func: 'getLsData'
                         },
                         dataType: 'json',
+                        beforeSend: function () {
+                            $('#getLsData .loader').show();
+                        },
+                        complete: function () {
+                            $('#getLsData .loader').hide();
+                        },
+
                         success: function (data) {
-                            $('#lsAddress').text(data['ДанныеЛС']['АдресЛС']);
-                            $('#lsData').show(); // Показываем блок с деталями ЛС
-                            var select = $('#CodeSB');
-                            select.html(''); // Очистим список перед добавлением данных
-                            $.each(data['ДанныеЛС']['КодыСБ'], function (index, value) {
-                                select.append($('<option>', {
-                                    value: index, // или другое уникальное значение
-                                    text: value  // текст опции
-                                }));
-                            });
-                            var tablePO = $('#tablePO');
-                            tablePO.find('tbody').empty();
-                            $.each(data['ДанныеЛС']['ПолучателиСБ'], function (index, value) {
-                                var row = $('<tr>');
-                                row.append($('<td>').text(value.Получатель));
-                                var editableCell = $('<td class="editable">');
-                                editableCell.append($('<input type="text" value="' + value.Остаток + '">'));
-                                row.append(editableCell);
-                                row.append($('<td hidden="">').text(value.КодПолучателя));
-                                tablePO.find('tbody').append(row);
-                                $('#tablePO').find('.editable input').eq(0).trigger('input');
-                            });
-                            //Прибор,ЗаводскойНомер,ПредыдущееПоказание,ТекущееПоказание,КодПрибора
-                            var tableIPU = $('#tableIPU');
-                            tableIPU.find('tbody').empty();
-                            $.each(data['ДанныеЛС']['Приборы'], function (index, value) {
-                                var row = $('<tr>');
-                                row.append($('<td>').text(value.Прибор));
-                                row.append($('<td>').text(value.ЗаводскойНомер));
-                                row.append($('<td>').text(value.ПредыдущееПоказание));
-                                var editableCell = $('<td class="editable">');
-                                editableCell.append($('<input type="text" value="' + value.ТекущееПоказание + '">'));
-                                row.append(editableCell);
-                                row.append($('<td  hidden="">').text(value.КодПрибора));
-                                tableIPU.find('tbody').append(row);
-                                $('#tableIPU').find('.editable input').eq(0).trigger('input');
-
-
-                            });
-
+                            handleGetLsDataSuccess(data)
                         },
                         error: function () {
                             alert('Ошибка при получении данных.');
@@ -520,12 +632,23 @@
                     alert('Пожалуйста, введите ЛС.');
                 }
             });
+            
             //при изменении CodeSB
             $('#CodeSB').change(function () {
+                $('#getlsDataButton').trigger('click');
+            });
+
+            $('#payButton').click(function () {
+                if (!$('#payButton').data('summa')) {
+                    $('#payButton').data('summa', $('#totalTablePO').text());
+                    $('#payButton').text('Оплатить ' + $('#totalTablePO').text() + ' руб.');
+                    return;
+                }
+                return;
+
                 var Ls = $('#Ls').val(); // Получаем введенный ЛС
                 var ivcBaseWdsl = $('#ivcBaseWdsl').text(); // Получаем континент выбранной базы
                 var ivcBaseCode = $('#ivcBaseCode').text();
-                var codeSB = $('#CodeSB option:selected').text();
                 if (Ls) {
                     $.ajax({
                         url: 'soap.php',
@@ -533,49 +656,19 @@
                         data: {
                             ivcBaseCode: ivcBaseCode,
                             ivcBaseWdsl: ivcBaseWdsl,
-                            codeSB: codeSB,
+                            codeSB: '',
                             Ls: Ls,
                             func: 'getLsData'
                         },
                         dataType: 'json',
+                        beforeSend: function () {
+                            $('#getLsData .loader').show();
+                        },
+                        complete: function () {
+                            $('#getLsData .loader').hide();
+                        },
+
                         success: function (data) {
-                            // $('#lsAddress').text(data['ДанныеЛС']['АдресЛС']);
-                            $('#lsData').show(); // Показываем блок с деталями ЛС
-                            /*                           var select = $('#CodeSB');
-                                                      select.html(''); // Очистим список перед добавлением данных
-                                                      $.each(data['ДанныеЛС']['КодыСБ'], function (index, value) {
-                                                          select.append($('<option>', {
-                                                              value: index, // или другое уникальное значение
-                                                              text: value  // текст опции
-                                                          }));
-                                                      }); */
-                            var tablePO = $('#tablePO');
-                            tablePO.find('tbody').empty();
-                            $.each(data['ДанныеЛС']['ПолучателиСБ'], function (index, value) {
-                                var row = $('<tr>');
-                                row.append($('<td>').text(value.Получатель));
-                                var editableCell = $('<td class="editable">');
-                                editableCell.append($('<input type="text" value="' + value.Остаток + '">'));
-                                row.append(editableCell);
-                                row.append($('<td>').text(value.КодПолучателя));
-                                tablePO.find('tbody').append(row);
-                                $('#tablePO').find('.editable input').eq(0).trigger('input');
-                            });
-                            //Прибор,ЗаводскойНомер,ПредыдущееПоказание,ТекущееПоказание,КодПрибора
-                            var tableIPU = $('#tableIPU');
-                            tableIPU.find('tbody').empty();
-                            $.each(data['ДанныеЛС']['Приборы'], function (index, value) {
-                                var row = $('<tr>');
-                                row.append($('<td>').text(value.Прибор));
-                                row.append($('<td>').text(value.ЗаводскойНомер));
-                                row.append($('<td>').text(value.ПредыдущееПоказание));
-                                var editableCell = $('<td class="editable">');
-                                editableCell.append($('<input type="text" value="' + value.ТекущееПоказание + '">'));
-                                row.append(editableCell);
-                                row.append($('<td  hidden="">').text(value.КодПрибора));
-                                tableIPU.find('tbody').append(row);
-                                $('#tableIPU').find('.editable input').eq(0).trigger('input');
-                            });
 
                         },
                         error: function () {
@@ -586,7 +679,9 @@
                     alert('Пожалуйста, введите ЛС.');
                 }
             });
+
         });
+
     </script>
 </body>
 
