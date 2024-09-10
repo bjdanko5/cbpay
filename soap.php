@@ -7,12 +7,10 @@ $wsdlLK = "http://192.168.10.128/zkh_lk1/ws/WebСервисLK?wsdl";
 //$_SESSION = array();
 
 // Функция для получения списка стран
-function getivcBases()
+function getIvcBases()
 {
-    // Закомментируем реальный SOAP-запрос для отладки
-    
     global $wsdlLK;
-    #$wsdlLK = "http://example.com/your-soap-api?wsdl";
+   
     $options = [
         'login' => "Администратор", 
         'password' => "",
@@ -22,8 +20,8 @@ function getivcBases()
 
     try {
         $client = new SoapClient($wsdlLK, $options);
-        $response = $client->GetivcBases(); // Предположим, метод GetivcBases
-        return json_decode($response->return,true); // Вернем массив стран
+        $response = $client->GetIvcBases();
+        return json_decode($response->return,true); 
     } catch (SoapFault $e) {
     // Возвращаем тестовые данные для отладки
     session_destroy();
@@ -130,12 +128,12 @@ function getLsData($ivcBaseCode, $ivcBaseWdsl,$Ls,$codeSB='')
 //print $_SERVER['REQUEST_METHOD'];
 // Обработка запросов
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['func']) && $_POST['func']==='getivcBases') {
+    if (isset($_POST['func']) && $_POST['func']==='getIvcBases') {
 
     if (!isset($_SESSION['ivcBases'])) {
 
         $_SESSION = array();
-        $ivcBases = getivcBases(); // Получаем список стран (тестовые данные)
+        $ivcBases = getIvcBases(); // Получаем список стран (тестовые данные)
         $_SESSION['ivcBases'] = $ivcBases; // Сохраняем список стран в сессии
         echo json_encode($ivcBases);
     } else {
@@ -155,20 +153,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($getLsData);
     }    
 }
-    
-    if (isset($_POST['ivcBaseCode']) && !isset($_POST['Ls'])) {
+    if (isset($_POST['func']) && $_POST['func']==='getIvcBasesDetails') {
+    //if (isset($_POST['ivcBaseCode']) && !isset($_POST['Ls'])) {
         $ivcBaseCode = $_POST['ivcBaseCode'];
         $details = getivcBaseDetails($ivcBaseCode);
         echo json_encode($details);
     }
 
-   
-    if (isset($_POST['ivcBaseCode']) && isset($_POST['Ls'])) {
+    if (isset($_POST['func']) && $_POST['func']==='getLsData') {
+    //if (isset($_POST['ivcBaseCode']) && isset($_POST['Ls'])) {
         $ivcBaseCode = $_POST['ivcBaseCode'];
         $Ls = $_POST['Ls'];
         $ivcBaseWdsl = $_POST['ivcBaseWdsl'];
         $codeSB = $_POST['codeSB'];
-        $LsData = getlsData($ivcBaseCode, $ivcBaseWdsl,$Ls,$codeSB);
+        $LsData = getLsData($ivcBaseCode, $ivcBaseWdsl,$Ls,$codeSB);
         echo json_encode($LsData);
     }
 

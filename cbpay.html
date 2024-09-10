@@ -156,26 +156,21 @@
         <div class="mode-switch">
             <span class="blue-label"> Поиск : </span>
 
-
             <button class="mode-btn active" id="territory-btn" data-mode="territory">По территории</button>
             <button class="mode-btn" id="access-code-btn" data-mode="access-code">По коду доступа</button>
 
             <div id="territory-selection" class="mode-content">
-                <!-- Здесь будет содержимое для выбора "По территории" -->
                 <label for="ivcBase"></label>
                 <select id="ivcBase" name="ivcBase">
                     <option value="">Выберите...</option>
-                </select>
-
+                    <div class="loader"></div>   
+                </select>             
             </div>
 
             <div id="access-code-selection" class="mode-content">
-                <!-- Здесь будет содержимое для выбора "По коду доступа" -->
                 <label for="accessCodeLs"></label>
                 <input type="text" id="accessCodeLs" name="accessCodeLs">
                 <div class="loader"></div>
-
-
             </div>
         </div>
         <div id="ivcBaseDetails" hidden>
@@ -185,6 +180,7 @@
             <span id="ivcBaseName" class="blue-label"></span>
             <span id="ivcBaseCode" hidden></span>
             <span id="ivcBaseWdsl" hidden> </span>
+            <div class="loader"></div>
         </div>
         <br>
         <div id="getLsData">
@@ -248,15 +244,84 @@
             <button class="pay-btn" type="button" id="payButton" disabled>Оплатить</button>
         </div>
     </form>
-
+    <div id="error-message"></div>
     <script>
         $(document).ready(function () {
-            $.when(
-                $.getScript("./js/stages.js")
-                ,$.getScript("./js/handleGetLsData.js"),
-                //$.getScript("third.js")
-            ).done(function () {
-                Stage('Инициализация');
+            $.getScript("./js/handleError.js").then(function () {
+                return $.getScript("./js/stages.js");
+            }).then(function () {
+                return $.getScript("./js/handleGetLsData.js");
+            }).then(function () {
+                return $.getScript("./js/handleGetIvcBases.js");
+            }).then(function () {
+                //return $.getScript("./js/handleError.js");    
+            }).done(function () {
+                //получаем список баз данных
+                $.ajax({
+                    url: 'soap.php',
+                    type: 'POST',
+                    data: { func: 'getIvcBases' },
+                    dataType: 'json',
+                    beforeSend: function () {
+                                $('.loader').show();
+                            },
+                            complete: function () {
+                                $('.loader').hide();
+                            },
+
+                    success: function (data) {
+                        handleGetIvcBasesSuccess(data);
+                    },
+                    error: function (xhr, status, error) {
+                        ErrorON(error);
+                    }
+                });
+
+                $('.mode-btn').click(function () {
+                    event.preventDefault(); // Отменяем стандартное поведение кнопки
+                    $('.mode-btn').removeClass('active'); // Убираем активный класс со всех кнопок
+                    $(this).addClass('active'); // Добавляем активный класс на нажатую кнопку
+                    if ($(this).data('mode') === 'territory') {
+                        Stage('Выбран режим по территории');
+                    } else {
+                        Stage('Выбран режим по коду доступа');
+                    }
+                });
+
+                $('#ivcBase').change(function () {
+
+                    var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной базы 
+                    var selectedCode = $('#ivcBase').val(); // Получаем код выбранной базы
+
+                    if (selectedCode) {
+                        $.ajax({
+                            url: 'soap.php',
+                            type: 'POST',
+                            data: {
+                                ivcBaseCode: selectedCode,
+                                func: 'getIvcBasesDetails'
+                            },
+                            dataType: 'json',
+                            beforeSend: function () {
+                                $('#ivcBase .loader').show();
+                            },
+                            complete: function () {
+                                $('#ivcBase .loader').hide();
+                            },
+                            success: function (data) {
+                                $('#ivcBaseCode').text(data[0].ivcBaseCode);
+                                $('#ivcBaseWdsl').text(data[0].ivcBaseWdsl);
+                                $('#ivcBaseName').text(data[0].ivcBaseName);
+                                Stage('Выбрана территория');
+                            },
+                            error: function (xhr, status, error) {
+                                ErrorON(error);
+                            }
+                        });
+                    } else {
+                        alert('Пожалуйста, выберите территорию.');
+                    }
+                });
 
                 $('#tablePO').on('input', '.editable input', function () {
                     var sum = 0;
@@ -287,71 +352,6 @@
                         }
                     }
 
-                });
-
-                $.ajax({
-                    url: 'soap.php',
-                    type: 'POST',
-                    data: { func: 'getivcBases' },
-                    dataType: 'json',
-
-                    success: function (data) {
-
-                        var select = $('#ivcBase');
-                        select.html(''); // Очистим список перед добавлением данных
-
-                        select.append($('<option>', {
-                            value: 0, // или другое уникальное значение
-                            text: 'Выберите...'  // текст опции
-                        }));
-
-                        $.each(data, function (index, value) {
-                            select.append($('<option>', {
-                                value: value.code, // или другое уникальное значение
-                                text: value.name  // текст опции
-                            }));
-                        });
-                    },
-                    error: function () {
-                        alert('Ошибка при загрузке данных.');
-                    }
-                });
-
-                $('.mode-btn').click(function () {
-                    event.preventDefault(); // Отменяем стандартное поведение кнопки
-                    $('.mode-btn').removeClass('active'); // Убираем активный класс со всех кнопок
-                    $(this).addClass('active'); // Добавляем активный класс на нажатую кнопку
-                    if ($(this).data('mode') === 'territory') {
-                        Stage('Выбран режим по территории');
-                    } else {
-                        Stage('Выбран режим по коду доступа');
-                    }
-                });
-
-                $('#ivcBase').change(function () {
-
-                    var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной базы 
-                    var selectedCode = $('#ivcBase').val(); // Получаем код выбранной базы
-
-                    if (selectedCode) {
-                        $.ajax({
-                            url: 'soap.php',
-                            type: 'POST',
-                            data: { ivcBaseCode: selectedCode }, // Передаем код базы на сервер
-                            dataType: 'json',
-                            success: function (data) {
-                                $('#ivcBaseCode').text(data[0].ivcBaseCode);
-                                $('#ivcBaseWdsl').text(data[0].ivcBaseWdsl);
-                                $('#ivcBaseName').text(data[0].ivcBaseName);
-                                Stage('Выбрана территория');
-                            },
-                            error: function () {
-                                alert('Ошибка при получении данных.');
-                            }
-                        });
-                    } else {
-                        alert('Пожалуйста, выберите территорию.');
-                    }
                 });
 
                 $('#accessCodeLs').change(function () {
@@ -385,8 +385,9 @@
                                 $('#getlsDataButton').trigger('click');
 
                             },
-                            error: function () {
-                                alert('Ошибка при получении данных.');
+
+                            error: function (xhr, status, error) {
+                                ErrorON(error);
                             }
                         });
                     } else {
@@ -394,7 +395,7 @@
                     }
                 });
 
-                // Обработчик нажатия на кнопку "Найти ЛС"
+                // Обработчик нажатия на кнопку "Детализация"
                 $('#getlsDataButton').click(function () {
                     var Ls = $('#Ls').val(); // Получаем введенный ЛС
                     var ivcBaseWdsl = $('#ivcBaseWdsl').text();
@@ -421,8 +422,8 @@
                             success: function (data) {
                                 handleGetLsDataSuccess(data)
                             },
-                            error: function () {
-                                alert('Ошибка при получении данных.');
+                            error: function (xhr, status, error) {
+                                ErrorON(error);
                             }
                         });
                     } else {
@@ -468,8 +469,8 @@
                             success: function (data) {
 
                             },
-                            error: function () {
-                                alert('Ошибка при получении данных.');
+                            error: function (xhr, status, error) {
+                                ErrorON(error);
                             }
                         });
                     } else {
