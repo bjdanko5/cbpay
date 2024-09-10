@@ -1,14 +1,18 @@
 
 function updateCodeSB(CodeSB) {
-    var select = $('#CodeSB');
-    select.html(''); // Очистим список перед добавлением данных
-    $.each(CodeSB, function (index, value) {
-        select.append($('<option>', {
-            value: index, // или другое уникальное значение
-            text: value  // текст опции
-        }));
+  var select = $('#CodeSB');
+  var selectedCodeSB = $('#CodeSB').text().includes('...') ? '' : $('#CodeSB').text();
+  select.html(''); // Очистим список перед добавлением данных
+  $.each(CodeSB, function (index, value) {
+    var option = $('<option>', {
+      value: index, // или другое уникальное значение
+      text: value   // текст опции
     });
-
+    if (value === selectedCodeSB || (selectedCodeSB === '' && index === 0)) {
+      option.attr('selected', 'selected');
+    }
+    select.append(option);
+  });
 }
 
 function updateLsAddress(address) {

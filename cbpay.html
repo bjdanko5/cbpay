@@ -347,42 +347,8 @@
                         }
                     }
                 });
-                // Обработчик при изменении accessCodeLs(код доступа ЛС)
-                $('#accessCodeLs').change(function () {
-                    event.preventDefault(); // Отменяем стандартное поведение кнопки
-                    if ($(':focus').length === 0) {
-                        return;
-                    }
-                    var accessCodeLs = $('#accessCodeLs').val(); // Получаем код доступа ЛС
-                    if (accessCodeLs) {
-                        $.ajax({
-                            url: 'soap.php',
-                            type: 'POST',
-                            data: {
-                                accessCodeLs: accessCodeLs,
-                                func: 'getByaccessCodeLs',
-                            }, 
-                            dataType: 'json',
-                            beforeSend: function () {
-                                $('#access-code-selection .loader').show();
-                            },
-                            complete: function () {
-                                $('#access-code-selection .loader').hide();
-                            },
-                            success: function (data) {
-                                handleAccessCodeLs(data);
-                            },
-                            error: function (xhr, status, error) {
-                                ErrorON(error);
-                            }
-                        });
-                    } else {
-                        alert('Пожалуйста, выберите код доступа.');
-                    }
-                });
-
-                // Обработчик нажатия на кнопку "Детализация"
-                $('#getlsDataButton').click(function () {
+                              // Обработчик нажатия на кнопку "Детализация"
+                              $('#getlsDataButton').click(function () {
                     var Ls = $('#Ls').val(); // Получаем введенный ЛС
                     var ivcBaseWdsl = $('#ivcBaseWdsl').text();
                     var ivcBaseCode = $('#ivcBaseCode').text();
@@ -422,6 +388,41 @@
                     $('#getlsDataButton').trigger('click');
                 });
 
+                // Обработчик при изменении accessCodeLs(код доступа ЛС)
+                $('#accessCodeLs').change(function () {
+                    event.preventDefault(); // Отменяем стандартное поведение кнопки
+                    if ($(':focus').length === 0) {
+                        return;
+                    }
+                    var accessCodeLs = $('#accessCodeLs').val(); // Получаем код доступа ЛС
+                    if (accessCodeLs) {
+                        $.ajax({
+                            url: 'soap.php',
+                            type: 'POST',
+                            data: {
+                                accessCodeLs: accessCodeLs,
+                                func: 'getByaccessCodeLs',
+                            }, 
+                            dataType: 'json',
+                            beforeSend: function () {
+                                $('#access-code-selection .loader').show();
+                            },
+                            complete: function () {
+                                $('#access-code-selection .loader').hide();
+                            },
+                            success: function (data) {
+                                handleAccessCodeLs(data);
+                            },
+                            error: function (xhr, status, error) {
+                                ErrorON(error);
+                            }
+                        });
+                    } else {
+                        alert('Пожалуйста, выберите код доступа.');
+                    }
+                });
+
+  
                 // Обработчик нажатия на кнопку "Оплатить"
                 $('#payButton').click(function () {
                     if (!$('#payButton').data('summa')) {
