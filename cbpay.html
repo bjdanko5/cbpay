@@ -264,7 +264,7 @@
             window.restoreIvcBase();*/
             //$ivcBase.show();
             // AJAX запрос для получения списка баз
-            function Stage(stageName) {
+  /*           function Stage(stageName) {
                 const $modeSwitch = $('.mode-switch');
                 const $getlsDataButton = $('#getlsDataButton');
                 const $territorySelection = $('#territory-selection');
@@ -397,8 +397,12 @@
 
                 stages[stageName]();
             }
-
-            Stage('Инициализация');
+ */
+ $.getScript('./js/stages.js', function () {
+    // код, который будет выполнен после загрузки внешнего скрипта
+    //Stage('Инициализация');
+  });
+           Stage('Инициализация');
 
             $('#tablePO').on('input', '.editable input', function () {
                 var sum = 0;
@@ -470,12 +474,7 @@
                 }
             });
 
-            /*             $('#toggleModeSwitchButton').click(function () {
-                            event.preventDefault(); // Отменяем стандартное поведение кнопки
-                            Stage('Инициализация');
-                        }); */
-
-            $('#ivcBase').change(function () {
+                 $('#ivcBase').change(function () {
 
                 var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной базы 
                 var selectedCode = $('#ivcBase').val(); // Получаем код выбранной базы
@@ -540,17 +539,9 @@
                     alert('Пожалуйста, выберите код доступа.');
                 }
             });
-            function handleGetLsDataSuccess(data) {
-                const lsAddress = data['ДанныеЛС']['АдресЛС'];
-                const lsData = data['ДанныеЛС'];
-                const CodeSB = data['ДанныеЛС']['КодыСБ'];
-                updateCodeSB(CodeSB);
-                updateLsAddress(lsAddress);
-                updateLsData(lsData);
-                Stage('Детализация');
-            }
+           
             function updateCodeSB(CodeSB) {
-             var select = $('#CodeSB');
+                var select = $('#CodeSB');
                 select.html(''); // Очистим список перед добавлением данных
                 $.each(CodeSB, function (index, value) {
                     select.append($('<option>', {
@@ -583,6 +574,7 @@
                     row.append($('<td hidden="">').text(item.КодПолучателя));
                     table.find('tbody').append(row);
                 });
+                 $('#tablePO .editable input').trigger('input');
             }
 
             function updateTableIPU(table, data) {
@@ -597,11 +589,21 @@
                     table.find('tbody').append(row);
                 });
             }
+            function handleGetLsDataSuccess(data) {
+                const lsAddress = data['ДанныеЛС']['АдресЛС'];
+                const lsData = data['ДанныеЛС'];
+                const CodeSB = data['ДанныеЛС']['КодыСБ'];
+                updateCodeSB(CodeSB);
+                updateLsAddress(lsAddress);
+                updateLsData(lsData);
+                Stage('Детализация');
+            }
             // Обработчик нажатия на кнопку "Найти ЛС"
             $('#getlsDataButton').click(function () {
                 var Ls = $('#Ls').val(); // Получаем введенный ЛС
-                var ivcBaseWdsl = $('#ivcBaseWdsl').text(); // Получаем континент выбранной базы
+                var ivcBaseWdsl = $('#ivcBaseWdsl').text(); 
                 var ivcBaseCode = $('#ivcBaseCode').text();
+                var codeSB = $('#CodeSB').text().includes('...') ? '' : $('#CodeSB').text();
                 if (Ls) {
                     $.ajax({
                         url: 'soap.php',
@@ -609,7 +611,7 @@
                         data: {
                             ivcBaseCode: ivcBaseCode,
                             ivcBaseWdsl: ivcBaseWdsl,
-                            codeSB: '',
+                            codeSB: codeSB,
                             Ls: Ls,
                             func: 'getLsData'
                         },
@@ -620,7 +622,6 @@
                         complete: function () {
                             $('#getLsData .loader').hide();
                         },
-
                         success: function (data) {
                             handleGetLsDataSuccess(data)
                         },
@@ -632,7 +633,7 @@
                     alert('Пожалуйста, введите ЛС.');
                 }
             });
-            
+
             //при изменении CodeSB
             $('#CodeSB').change(function () {
                 $('#getlsDataButton').trigger('click');
