@@ -251,436 +251,233 @@
 
     <script>
         $(document).ready(function () {
-            /*function replaceWithPlaceholder($element) {
-              var prevElement = $element.prev();
-              var originalElement = $element.detach();
-              $('<div class="placeholder"></div>').height(originalElement.height()).insertAfter(prevElement);
-              return function restoreElement() {
-                $('.placeholder').replaceWith(originalElement);
-              };
-            }
-            const $ivcBase = $('#ivcBase');
-            window.restoreIvcBase = replaceWithPlaceholder($ivcBase);
-            window.restoreIvcBase();*/
-            //$ivcBase.show();
-            // AJAX запрос для получения списка баз
-  /*           function Stage(stageName) {
-                const $modeSwitch = $('.mode-switch');
-                const $getlsDataButton = $('#getlsDataButton');
-                const $territorySelection = $('#territory-selection');
-                const $accessCodeSelection = $('#access-code-selection');
-                const $ivcBase = $('#ivcBase');
-                const $accessCodeLs = $('#accessCodeLs');
-                const $ivcBaseDetails = $('#ivcBaseDetails');
-                const $Ls = $('#Ls');
-                const $getLsData = $('#getLsData');
-                const $lsData = $('#lsData');
-                const $Address = $('#lsAddress');
-                const $loader = $('.loader');
-                const $payButton = $('#payButton');
+            $.when(
+                $.getScript("./js/stages.js")
+                ,$.getScript("./js/handleGetLsData.js"),
+                //$.getScript("third.js")
+            ).done(function () {
+                Stage('Инициализация');
 
-                const stages = {
-                    'Инициализация': () => {
-                        $ivcBase.val($ivcBase.find('option:first').val());
-                        $Ls.val('');
-                        $getLsData.prop('disabled', true);
-                        $territorySelection.addClass('active');
-                        $accessCodeSelection.removeClass('active');
-                        $ivcBase.show();
-                        $ivcBaseDetails.hide();
-                        $Ls.show();
-                        $lsData.hide();
-                        $lsData.children().hide;
-                        $getlsDataButton.prop('disabled', true);
-                        $getlsDataButton.removeClass('active');
-                        $Address.hide();
-                        $loader.hide();
-                        $payButton.prop('disabled', true);
-                        $payButton.removeClass('active');
-                        $('#payButton').removeData('summa');
-                        $('#payButton').text('Оплатить ');
-                    },
-                    'Выбран режим по территории': () => {
-                        $territorySelection.addClass('active');
-                        $accessCodeSelection.removeClass('active');
-                        $territorySelection.show();
-                        $accessCodeSelection.hide();
-                        $ivcBase.show();
-                        $ivcBaseDetails.hide();
-                        $lsData.hide();
-                        $Address.hide();
-                        $Ls.prop('disabled', true);
-                        $getLsData.prop('disabled', true);
-                        $getlsDataButton.prop('disabled', true);
-                        $getlsDataButton.removeClass('active');
-                        $Ls.val('');
-                        $('#payButton').removeData('summa');
-                        $('#payButton').text('Оплатить ');
-                    },
-                    'Выбран режим по коду доступа': () => {
-                        $accessCodeSelection.addClass('active');
-                        $territorySelection.removeClass('active');
-                        $accessCodeSelection.show();
-                        $territorySelection.hide();
-                        $accessCodeLs.show();
-                        $accessCodeLs.val('970017035729-');
-                        $ivcBaseDetails.hide();
-                        $lsData.hide();
-                        $Address.hide();
-                        $Ls.prop('disabled', true);
-                        $getLsData.prop('disabled', true);
-                        $getlsDataButton.prop('disabled', true);
-                        $getlsDataButton.removeClass('active');
-                        $('#payButton').text('Оплатить ');
-
-                        $Ls.val('');
-                        $('#payButton').removeData('summa');
-                    },
-                    'Выбрана территория': () => {
-                        $territorySelection.removeClass('active');
-                        $accessCodeSelection.removeClass('active');
-                        $ivcBase.hide();
-                        $ivcBaseDetails.show();
-                        $Ls.show();
-                        $lsData.hide();
-                        $Address.hide();
-                        $Ls.prop('disabled', false);
-                        $getLsData.prop('disabled', false);
-                        $getlsDataButton.prop('disabled', false);
-                        $getlsDataButton.addClass('active');
-                        $('#payButton').removeData('summa');
-                        $('#payButton').text('Оплатить ');
-                    },
-                    'Выбран код доступа': () => {
-                        //$modeSwitch.prop('disabled', true);
-                        $territorySelection.removeClass('active');
-                        $accessCodeSelection.removeClass('active');
-                        $ivcBase.hide();
-                        //window.restoreIvcBase = replaceWithPlaceholder($ivcBase);
-                        $ivcBaseDetails.show();
-                        $Ls.show();
-                        $Address.show();
-                        $lsData.hide();
-                        $Ls.prop('disabled', false);
-                        $getLsData.prop('disabled', false);
-                        $getlsDataButton.prop('disabled', false);
-                        $getlsDataButton.addClass('active');
-                        $payButton.prop('disabled', false);
-                        $payButton.addClass('active');
-                        $('#payButton').removeData('summa');
-                        $('#payButton').text('Оплатить ');
-
-                    },
-                    'Детализация': () => {
-                        //$modeSwitch.prop('disabled', true);
-                        $territorySelection.removeClass('active');
-                        $accessCodeSelection.removeClass('active');
-                        $ivcBase.hide();
-                        //window.restoreIvcBase = replaceWithPlaceholder($ivcBase);
-                        $ivcBaseDetails.show();
-                        $Ls.show();
-                        $Address.show();
-                        $lsData.show();
-                        $Ls.prop('disabled', false);
-                        $getLsData.prop('disabled', false);
-                        $getlsDataButton.prop('disabled', false);
-                        $getlsDataButton.addClass('active');
-                        $payButton.prop('disabled', false);
-                        $payButton.addClass('active');
-                        $('#payButton').removeData('summa');
-                        $('#payButton').text('Оплатить ');
-
-                    }
-
-
-                };
-
-                stages[stageName]();
-            }
- */
- $.getScript('./js/stages.js', function () {
-    // код, который будет выполнен после загрузки внешнего скрипта
-    Stage('Инициализация');
-  });
-           //Stage('Инициализация');
-
-            $('#tablePO').on('input', '.editable input', function () {
-                var sum = 0;
-                $('#tablePO .editable input').each(function () {
-                    sum += parseFloat($(this).val().replace(',', '.'));
+                $('#tablePO').on('input', '.editable input', function () {
+                    var sum = 0;
+                    $('#tablePO .editable input').each(function () {
+                        sum += parseFloat($(this).val().replace(',', '.'));
+                    });
+                    $('#totalTablePO').text(sum.toFixed(1).replace('.', ','));
+                    Stage('Детализация');
                 });
-                $('#totalTablePO').text(sum.toFixed(1).replace('.', ','));
-                Stage('Детализация');
-            });
 
-            $('#accessCodeLs').on('keydown', function (e) {
-                if (e.which === 13) { // Enter
-                    e.preventDefault(); // предотвратить дефолтное поведение
-                    $('#accessCodeLs').trigger('change');
-                }
-            });
+                $('#accessCodeLs').on('keydown', function (e) {
+                    if (e.which === 13) { // Enter
+                        e.preventDefault(); // предотвратить дефолтное поведение
+                        $('#accessCodeLs').trigger('change');
+                    }
+                });
 
-            $('#myForm').on('keydown', function (e) {
-                if (e.which === 13) { // Enter
-                    e.preventDefault(); // предотвратить дефолтное поведение
-                    if ($(':focus').is('.editable input')) {
-                        var nextInput = $(':focus').closest('tr').next('tr').find('.editable input');
-                        if (nextInput.length > 0) {
-                            nextInput.focus();
-                        } else {
-                            $(':focus').focus(); // оставить фокус на текущем input
+                $('#myForm').on('keydown', function (e) {
+                    if (e.which === 13) { // Enter
+                        e.preventDefault(); // предотвратить дефолтное поведение
+                        if ($(':focus').is('.editable input')) {
+                            var nextInput = $(':focus').closest('tr').next('tr').find('.editable input');
+                            if (nextInput.length > 0) {
+                                nextInput.focus();
+                            } else {
+                                $(':focus').focus(); // оставить фокус на текущем input
+                            }
                         }
                     }
-                }
 
-            });
+                });
 
-            $.ajax({
-                url: 'soap.php',
-                type: 'POST',
-                data: { func: 'getivcBases' },
-                dataType: 'json',
+                $.ajax({
+                    url: 'soap.php',
+                    type: 'POST',
+                    data: { func: 'getivcBases' },
+                    dataType: 'json',
 
-                success: function (data) {
+                    success: function (data) {
 
-                    var select = $('#ivcBase');
-                    select.html(''); // Очистим список перед добавлением данных
+                        var select = $('#ivcBase');
+                        select.html(''); // Очистим список перед добавлением данных
 
-                    select.append($('<option>', {
-                        value: 0, // или другое уникальное значение
-                        text: 'Выберите...'  // текст опции
-                    }));
-
-                    $.each(data, function (index, value) {
                         select.append($('<option>', {
-                            value: value.code, // или другое уникальное значение
-                            text: value.name  // текст опции
+                            value: 0, // или другое уникальное значение
+                            text: 'Выберите...'  // текст опции
                         }));
-                    });
-                },
-                error: function () {
-                    alert('Ошибка при загрузке данных.');
-                }
-            });
 
-            $('.mode-btn').click(function () {
-                event.preventDefault(); // Отменяем стандартное поведение кнопки
-                $('.mode-btn').removeClass('active'); // Убираем активный класс со всех кнопок
-                $(this).addClass('active'); // Добавляем активный класс на нажатую кнопку
-                if ($(this).data('mode') === 'territory') {
-                    Stage('Выбран режим по территории');
-                } else {
-                    Stage('Выбран режим по коду доступа');
-                }
-            });
+                        $.each(data, function (index, value) {
+                            select.append($('<option>', {
+                                value: value.code, // или другое уникальное значение
+                                text: value.name  // текст опции
+                            }));
+                        });
+                    },
+                    error: function () {
+                        alert('Ошибка при загрузке данных.');
+                    }
+                });
 
-                 $('#ivcBase').change(function () {
+                $('.mode-btn').click(function () {
+                    event.preventDefault(); // Отменяем стандартное поведение кнопки
+                    $('.mode-btn').removeClass('active'); // Убираем активный класс со всех кнопок
+                    $(this).addClass('active'); // Добавляем активный класс на нажатую кнопку
+                    if ($(this).data('mode') === 'territory') {
+                        Stage('Выбран режим по территории');
+                    } else {
+                        Stage('Выбран режим по коду доступа');
+                    }
+                });
 
-                var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной базы 
-                var selectedCode = $('#ivcBase').val(); // Получаем код выбранной базы
+                $('#ivcBase').change(function () {
 
-                if (selectedCode) {
-                    $.ajax({
-                        url: 'soap.php',
-                        type: 'POST',
-                        data: { ivcBaseCode: selectedCode }, // Передаем код базы на сервер
-                        dataType: 'json',
-                        success: function (data) {
-                            $('#ivcBaseCode').text(data[0].ivcBaseCode);
-                            $('#ivcBaseWdsl').text(data[0].ivcBaseWdsl);
-                            $('#ivcBaseName').text(data[0].ivcBaseName);
-                            Stage('Выбрана территория');
-                        },
-                        error: function () {
-                            alert('Ошибка при получении данных.');
-                        }
-                    });
-                } else {
-                    alert('Пожалуйста, выберите территорию.');
-                }
-            });
+                    var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной базы 
+                    var selectedCode = $('#ivcBase').val(); // Получаем код выбранной базы
 
-            $('#accessCodeLs').change(function () {
-                event.preventDefault(); // Отменяем стандартное поведение кнопки
-                if ($(':focus').length === 0) {
+                    if (selectedCode) {
+                        $.ajax({
+                            url: 'soap.php',
+                            type: 'POST',
+                            data: { ivcBaseCode: selectedCode }, // Передаем код базы на сервер
+                            dataType: 'json',
+                            success: function (data) {
+                                $('#ivcBaseCode').text(data[0].ivcBaseCode);
+                                $('#ivcBaseWdsl').text(data[0].ivcBaseWdsl);
+                                $('#ivcBaseName').text(data[0].ivcBaseName);
+                                Stage('Выбрана территория');
+                            },
+                            error: function () {
+                                alert('Ошибка при получении данных.');
+                            }
+                        });
+                    } else {
+                        alert('Пожалуйста, выберите территорию.');
+                    }
+                });
+
+                $('#accessCodeLs').change(function () {
+                    event.preventDefault(); // Отменяем стандартное поведение кнопки
+                    if ($(':focus').length === 0) {
+                        return;
+                    }
+                    var accessCodeLs = $('#accessCodeLs').val(); // Получаем код доступа ЛС
+                    if (accessCodeLs) {
+                        $.ajax({
+                            url: 'soap.php',
+                            type: 'POST',
+                            data: {
+                                accessCodeLs: accessCodeLs,
+                                func: 'getByaccessCodeLs',
+                            }, // Передаем код доступа ЛС на сервер
+                            dataType: 'json',
+                            beforeSend: function () {
+                                $('#access-code-selection .loader').show();
+                            },
+                            complete: function () {
+                                $('#access-code-selection .loader').hide();
+                            },
+                            success: function (data) {
+                                $('#ivcBaseCode').text(data['Реквизиты'].ivcBaseCode);
+                                $('#ivcBaseWdsl').text(data['Реквизиты'].ivcBaseWdsl);
+                                $('#ivcBaseName').text(data['Реквизиты'].ivcBaseName);
+                                $('#Ls').val(data['Реквизиты'].Ls);
+                                $('#lsAddress').text(data['Реквизиты'].Address);
+                                Stage('Выбран код доступа');
+                                $('#getlsDataButton').trigger('click');
+
+                            },
+                            error: function () {
+                                alert('Ошибка при получении данных.');
+                            }
+                        });
+                    } else {
+                        alert('Пожалуйста, выберите код доступа.');
+                    }
+                });
+
+                // Обработчик нажатия на кнопку "Найти ЛС"
+                $('#getlsDataButton').click(function () {
+                    var Ls = $('#Ls').val(); // Получаем введенный ЛС
+                    var ivcBaseWdsl = $('#ivcBaseWdsl').text();
+                    var ivcBaseCode = $('#ivcBaseCode').text();
+                    var codeSB = $('#CodeSB').text().includes('...') ? '' : $('#CodeSB').text();
+                    if (Ls) {
+                        $.ajax({
+                            url: 'soap.php',
+                            type: 'POST',
+                            data: {
+                                ivcBaseCode: ivcBaseCode,
+                                ivcBaseWdsl: ivcBaseWdsl,
+                                codeSB: codeSB,
+                                Ls: Ls,
+                                func: 'getLsData'
+                            },
+                            dataType: 'json',
+                            beforeSend: function () {
+                                $('#getLsData .loader').show();
+                            },
+                            complete: function () {
+                                $('#getLsData .loader').hide();
+                            },
+                            success: function (data) {
+                                handleGetLsDataSuccess(data)
+                            },
+                            error: function () {
+                                alert('Ошибка при получении данных.');
+                            }
+                        });
+                    } else {
+                        alert('Пожалуйста, введите ЛС.');
+                    }
+                });
+
+                //при изменении CodeSB
+                $('#CodeSB').change(function () {
+                    $('#getlsDataButton').trigger('click');
+                });
+
+                $('#payButton').click(function () {
+                    if (!$('#payButton').data('summa')) {
+                        $('#payButton').data('summa', $('#totalTablePO').text());
+                        $('#payButton').text('Оплатить ' + $('#totalTablePO').text() + ' руб.');
+                        return;
+                    }
                     return;
-                }
-                var accessCodeLs = $('#accessCodeLs').val(); // Получаем код доступа ЛС
-                if (accessCodeLs) {
-                    $.ajax({
-                        url: 'soap.php',
-                        type: 'POST',
-                        data: {
-                            accessCodeLs: accessCodeLs,
-                            func: 'getByaccessCodeLs',
-                        }, // Передаем код доступа ЛС на сервер
-                        dataType: 'json',
-                        beforeSend: function () {
-                            $('#access-code-selection .loader').show();
-                        },
-                        complete: function () {
-                            $('#access-code-selection .loader').hide();
-                        },
-                        success: function (data) {
-                            $('#ivcBaseCode').text(data['Реквизиты'].ivcBaseCode);
-                            $('#ivcBaseWdsl').text(data['Реквизиты'].ivcBaseWdsl);
-                            $('#ivcBaseName').text(data['Реквизиты'].ivcBaseName);
-                            $('#Ls').val(data['Реквизиты'].Ls);
-                            $('#lsAddress').text(data['Реквизиты'].Address);
-                            Stage('Выбран код доступа');
-                            $('#getlsDataButton').trigger('click');
 
-                        },
-                        error: function () {
-                            alert('Ошибка при получении данных.');
-                        }
-                    });
-                } else {
-                    alert('Пожалуйста, выберите код доступа.');
-                }
-            });
-           
-            function updateCodeSB(CodeSB) {
-                var select = $('#CodeSB');
-                select.html(''); // Очистим список перед добавлением данных
-                $.each(CodeSB, function (index, value) {
-                    select.append($('<option>', {
-                        value: index, // или другое уникальное значение
-                        text: value  // текст опции
-                    }));
+                    var Ls = $('#Ls').val(); // Получаем введенный ЛС
+                    var ivcBaseWdsl = $('#ivcBaseWdsl').text(); // Получаем континент выбранной базы
+                    var ivcBaseCode = $('#ivcBaseCode').text();
+                    if (Ls) {
+                        $.ajax({
+                            url: 'soap.php',
+                            type: 'POST',
+                            data: {
+                                ivcBaseCode: ivcBaseCode,
+                                ivcBaseWdsl: ivcBaseWdsl,
+                                codeSB: '',
+                                Ls: Ls,
+                                func: 'getLsData'
+                            },
+                            dataType: 'json',
+                            beforeSend: function () {
+                                $('#getLsData .loader').show();
+                            },
+                            complete: function () {
+                                $('#getLsData .loader').hide();
+                            },
+
+                            success: function (data) {
+
+                            },
+                            error: function () {
+                                alert('Ошибка при получении данных.');
+                            }
+                        });
+                    } else {
+                        alert('Пожалуйста, введите ЛС.');
+                    }
                 });
 
-            }
-
-            function updateLsAddress(address) {
-                const lsAddressElement = $('#lsAddress');
-                lsAddressElement.text(address);
-            }
-
-            function updateLsData(data) {
-                const tablePO = $('#tablePO');
-                const tableIPU = $('#tableIPU');
-
-                updateTablePO(tablePO, data['ПолучателиСБ']);
-                updateTableIPU(tableIPU, data['Приборы']);
-            }
-
-            function updateTablePO(table, data) {
-                table.find('tbody').empty();
-                data.forEach((item) => {
-                    const row = $('<tr>');
-                    row.append($('<td>').text(item.Получатель));
-                    row.append($('<td class="editable">').append($('<input type="text" value="' + item.Остаток + '">')));
-                    row.append($('<td hidden="">').text(item.КодПолучателя));
-                    table.find('tbody').append(row);
-                });
-                 $('#tablePO .editable input').trigger('input');
-            }
-
-            function updateTableIPU(table, data) {
-                table.find('tbody').empty();
-                data.forEach((item) => {
-                    const row = $('<tr>');
-                    row.append($('<td>').text(item.Прибор));
-                    row.append($('<td>').text(item.ЗаводскойНомер));
-                    row.append($('<td>').text(item.ПредыдущееПоказание));
-                    row.append($('<td class="editable">').append($('<input type="text" value="' + item.ТекущееПоказание + '">')));
-                    row.append($('<td hidden="">').text(item.КодПрибора));
-                    table.find('tbody').append(row);
-                });
-            }
-            function handleGetLsDataSuccess(data) {
-                const lsAddress = data['ДанныеЛС']['АдресЛС'];
-                const lsData = data['ДанныеЛС'];
-                const CodeSB = data['ДанныеЛС']['КодыСБ'];
-                updateCodeSB(CodeSB);
-                updateLsAddress(lsAddress);
-                updateLsData(lsData);
-                Stage('Детализация');
-            }
-            // Обработчик нажатия на кнопку "Найти ЛС"
-            $('#getlsDataButton').click(function () {
-                var Ls = $('#Ls').val(); // Получаем введенный ЛС
-                var ivcBaseWdsl = $('#ivcBaseWdsl').text(); 
-                var ivcBaseCode = $('#ivcBaseCode').text();
-                var codeSB = $('#CodeSB').text().includes('...') ? '' : $('#CodeSB').text();
-                if (Ls) {
-                    $.ajax({
-                        url: 'soap.php',
-                        type: 'POST',
-                        data: {
-                            ivcBaseCode: ivcBaseCode,
-                            ivcBaseWdsl: ivcBaseWdsl,
-                            codeSB: codeSB,
-                            Ls: Ls,
-                            func: 'getLsData'
-                        },
-                        dataType: 'json',
-                        beforeSend: function () {
-                            $('#getLsData .loader').show();
-                        },
-                        complete: function () {
-                            $('#getLsData .loader').hide();
-                        },
-                        success: function (data) {
-                            handleGetLsDataSuccess(data)
-                        },
-                        error: function () {
-                            alert('Ошибка при получении данных.');
-                        }
-                    });
-                } else {
-                    alert('Пожалуйста, введите ЛС.');
-                }
             });
-
-            //при изменении CodeSB
-            $('#CodeSB').change(function () {
-                $('#getlsDataButton').trigger('click');
-            });
-
-            $('#payButton').click(function () {
-                if (!$('#payButton').data('summa')) {
-                    $('#payButton').data('summa', $('#totalTablePO').text());
-                    $('#payButton').text('Оплатить ' + $('#totalTablePO').text() + ' руб.');
-                    return;
-                }
-                return;
-
-                var Ls = $('#Ls').val(); // Получаем введенный ЛС
-                var ivcBaseWdsl = $('#ivcBaseWdsl').text(); // Получаем континент выбранной базы
-                var ivcBaseCode = $('#ivcBaseCode').text();
-                if (Ls) {
-                    $.ajax({
-                        url: 'soap.php',
-                        type: 'POST',
-                        data: {
-                            ivcBaseCode: ivcBaseCode,
-                            ivcBaseWdsl: ivcBaseWdsl,
-                            codeSB: '',
-                            Ls: Ls,
-                            func: 'getLsData'
-                        },
-                        dataType: 'json',
-                        beforeSend: function () {
-                            $('#getLsData .loader').show();
-                        },
-                        complete: function () {
-                            $('#getLsData .loader').hide();
-                        },
-
-                        success: function (data) {
-
-                        },
-                        error: function () {
-                            alert('Ошибка при получении данных.');
-                        }
-                    });
-                } else {
-                    alert('Пожалуйста, введите ЛС.');
-                }
-            });
-
         });
 
     </script>

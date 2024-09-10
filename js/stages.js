@@ -1,4 +1,4 @@
-function Stage(stageName) {
+function Stage (stageName) {
     const $modeSwitch = $('.mode-switch');
     const $getlsDataButton = $('#getlsDataButton');
     const $territorySelection = $('#territory-selection');
@@ -131,3 +131,4 @@ function Stage(stageName) {
 
     stages[stageName]();
 }
+
