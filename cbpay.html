@@ -163,7 +163,7 @@
                 <label for="ivcBase"></label>
                 <select id="ivcBase" name="ivcBase">
                     <option value="">Выберите...</option>
-                </select>             
+                </select>
                 <div class="loader"></div>
             </div>
 
@@ -252,9 +252,9 @@
             }).then(function () {
                 return $.getScript("./js/handleGetIvcBases.js");
             }).then(function () {
-                return $.getScript("./js/handleGetIvcBasesDetails.js"); 
-            }).then(function () {    
-                return $.getScript("./js/handleAccessCodeLs.js");   
+                return $.getScript("./js/handleGetIvcBasesDetails.js");
+            }).then(function () {
+                return $.getScript("./js/handleAccessCodeLs.js");
             }).done(function () {
                 //получаем список баз данных
                 $.ajax({
@@ -263,11 +263,11 @@
                     data: { func: 'getIvcBases' },
                     dataType: 'json',
                     beforeSend: function () {
-                               $('#territory-selection .loader').show();
-                            },
-                            complete: function () {
-                                $('#territory-selection .loader').hide();
-                            },
+                        $('#territory-selection .loader').show();
+                    },
+                    complete: function () {
+                        $('#territory-selection .loader').hide();
+                    },
                     success: function (data) {
                         handleGetIvcBasesSuccess(data);
                     },
@@ -292,48 +292,35 @@
                     var selectedText = $('#ivcBase option:selected').text(); // Получаем текст выбранной базы 
                     var selectedCode = $('#ivcBase').val(); // Получаем код выбранной базы
 
-                    if (selectedCode) {
-                        $.ajax({
-                            url: 'soap.php',
-                            type: 'POST',
-                            data: {
-                                ivcBaseCode: selectedCode,
-                                func: 'getIvcBasesDetails'
-                            },
-                            dataType: 'json',
-                            beforeSend: function () {
-                                $('#ivcBase .loader').show();
-                            },
-                            complete: function () {
-                                $('#ivcBase .loader').hide();
-                            },
-                            success: function (data) {
-                                handleGetIvcBasesDetails(data);
-                            },
-                            error: function (xhr, status, error) {
-                                ErrorON(error);
-                            }
-                        });
-                    } else {
+                    if (!selectedCode) {
                         alert('Пожалуйста, выберите территорию.');
+                        return;
                     }
-                });
-
-                $('#tablePO').on('input', '.editable input', function () {
-                    var sum = 0;
-                    $('#tablePO .editable input').each(function () {
-                        sum += parseFloat($(this).val().replace(',', '.'));
+                    $.ajax({
+                        url: 'soap.php',
+                        type: 'POST',
+                        data: {
+                            ivcBaseCode: selectedCode,
+                            func: 'getIvcBasesDetails'
+                        },
+                        dataType: 'json',
+                        beforeSend: function () {
+                            $('#ivcBase .loader').show();
+                        },
+                        complete: function () {
+                            $('#ivcBase .loader').hide();
+                        },
+                        success: function (data) {
+                            handleGetIvcBasesDetails(data);
+                        },
+                        error: function (xhr, status, error) {
+                            ErrorON(error);
+                        }
                     });
-                    $('#totalTablePO').text(sum.toFixed(1).replace('.', ','));
-                    Stage('Детализация');
+
                 });
 
-                $('#accessCodeLs').on('keydown', function (e) {
-                    if (e.which === 13) { // Enter
-                        e.preventDefault(); // предотвратить дефолтное поведение
-                        $('#accessCodeLs').trigger('change');
-                    }
-                });
+
                 $('#myForm').on('keydown', function (e) {
                     if (e.which === 13) { // Enter
                         e.preventDefault(); // предотвратить дефолтное поведение
@@ -347,8 +334,8 @@
                         }
                     }
                 });
-                              // Обработчик нажатия на кнопку "Детализация"
-                              $('#getlsDataButton').click(function () {
+                // Обработчик нажатия на кнопку "Детализация"
+                $('#getlsDataButton').click(function () {
                     var Ls = $('#Ls').val(); // Получаем введенный ЛС
                     var ivcBaseWdsl = $('#ivcBaseWdsl').text();
                     var ivcBaseCode = $('#ivcBaseCode').text();
@@ -392,6 +379,7 @@
                 $('#accessCodeLs').change(function () {
                     event.preventDefault(); // Отменяем стандартное поведение кнопки
                     if ($(':focus').length === 0) {
+                        $('#access-code-selection .loader').hide();
                         return;
                     }
                     var accessCodeLs = $('#accessCodeLs').val(); // Получаем код доступа ЛС
@@ -402,7 +390,7 @@
                             data: {
                                 accessCodeLs: accessCodeLs,
                                 func: 'getByaccessCodeLs',
-                            }, 
+                            },
                             dataType: 'json',
                             beforeSend: function () {
                                 $('#access-code-selection .loader').show();
@@ -422,7 +410,7 @@
                     }
                 });
 
-  
+
                 // Обработчик нажатия на кнопку "Оплатить"
                 $('#payButton').click(function () {
                     if (!$('#payButton').data('summa')) {

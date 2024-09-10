@@ -1,4 +1,13 @@
 
+$('#tablePO').on('input', '.editable input', function () {
+    var sum = 0;
+    $('#tablePO .editable input').each(function () {
+        sum += parseFloat($(this).val().replace(',', '.'));
+    });
+    $('#totalTablePO').text(sum.toFixed(1).replace('.', ','));
+    Stage('Детализация');
+});
+
 function updateCodeSB(CodeSB) {
   var select = $('#CodeSB');
   var selectedCodeSB = $('#CodeSB').text().includes('...') ? '' : $('#CodeSB').text();
@@ -54,6 +63,10 @@ function updateTableIPU(table, data) {
 }
 function handleGetLsDataSuccess(data) {
     const lsAddress = data['ДанныеЛС']['АдресЛС'];
+    if (lsAddress ==='Лицевой счёт не обнаружен.') {
+        Stage('Выбрана территория');
+        return;    
+    }
     const lsData = data['ДанныеЛС'];
     const CodeSB = data['ДанныеЛС']['КодыСБ'];
     updateCodeSB(CodeSB);
